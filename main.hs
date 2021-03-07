@@ -1,14 +1,14 @@
-import Data.Map as Map
+import qualified Data.Map as M
 
 
-
-data AST = Unary Unary AST | Binary Binary AST AST | Ass_ String AST | Id_ String deriving (Eq, Ord)
+data AST = Unary Unary AST | Binary Binary AST AST | Ass_ String AST | Id_ String | Imparitive [AST] AST deriving (Eq, Ord)
 data Unary = Cos_ | Sin_ | Length_ | Abs_ | Neg_ deriving (Eq, Ord)
 data Binary = Mul_ | Add_ | Sub_ | Div_ deriving (Eq, Ord)
 
 instance Show AST where
     show (Id_ str) = str
     show (Ass_ a b) = a ++ " = " ++ show b
+    show (Imparitive statements a) = "(" ++ (foldl (++) "" $ map (\x -> show x ++ "\n") statements) ++ "\n" ++ show a ++ ")"
     show (Unary unary a) = show unary ++ "(" ++ show a ++ ")"
     show (Binary binary a b) = "(" ++ show a ++ " " ++ show binary ++ " " ++ show b ++ ")"
 
@@ -83,20 +83,45 @@ mget :: Maybe Int -> Int
 mget (Just a) = a
 mget (Nothing) = 0
 
-incVal :: AST -> Map AST Int -> Int
-incVal key map = (1+) $ mget $ Map.lookup key map
+incVal :: AST -> M.Map AST Int -> Int
+incVal key map_ = (1+) $ mget $ M.lookup key map_
 
-add key hashmap = insert key (incVal key hashmap) hashmap
+add key hashmap = M.insert key (incVal key hashmap) hashmap
 
-countSubTrees :: AST -> Map AST Int -> Map AST Int
+countSubTrees :: AST -> M.Map AST Int -> M.Map AST Int
 countSubTrees (Unary _ a) hashmap   = countSubTrees a $ add a hashmap
 countSubTrees (Binary _ a b) hashmap = countSubTrees b $ add b $ countSubTrees a (add a hashmap) -- insert b (incVal map) (insert a (incVal map) map)
-countSubTrees ast hashmap          = insert ast 1 hashmap
+countSubTrees ast hashmap          = M.insert ast 1 hashmap
 countSubTrees _ hashmap            = hashmap
 
-countSubTrees' ast = countSubTrees ast (empty :: Map AST Int)
+countSubTrees' ast = countSubTrees ast (M.empty :: M.Map AST Int)
+
+first (x, _) = x
+second (_, x) = x
+
+subtreesToOptimize :: [(AST, Int)] -> [AST]
+subtreesToOptimize ts = map first $ filter (\pair -> second pair > 1) ts
+
+factor :: AST -> AST -> AST
+factor (Imparitive instructions ast) term = Imparitive ((Ass_ "0x69" term) : instructions) $ factor ast term
+factor (Id_ a) _ = Id_ a
+factor (Binary cons last rast) term = if (Binary cons last rast) == term then (Id_ "0x69") else (Binary cons (factor last term) (factor rast term))
+factor (Unary cons ast) term = if (Unary cons ast) == term then (Id_ "0x69") else (Unary cons (factor ast term))
+-- factor ast term = if ast == term then (Id_ "0x69") else factor ast term
+
+wrapPureAST :: AST -> AST
+wrapPureAST (Imparitive instructions ast) = Imparitive instructions ast
+wrapPureAST ast = Imparitive [] ast
+
+factor' = factor . wrapPureAST
+
+optimize :: AST -> AST
+-- optimize ast = foldl factor' ast $ subtreesToOptimize $ M.toList $ countSubTrees' ast
+optimize ast = foldl factor (wrapPureAST ast) $ subtreesToOptimize $ M.toList $ countSubTrees' ast
+
+
 
 ast' = convertToBackendSyntaxTree ast
-
+ast'' = convertToBackendSyntaxTree $ Mul (Cos (Cos (Id "a"))) (Cos (Cos (Id "a")))
 main = putStrLn $ glslLayer layer
 
