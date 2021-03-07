@@ -102,11 +102,11 @@ second (_, x) = x
 subtreesToOptimize :: [(AST, Int)] -> [AST]
 subtreesToOptimize ts = map first $ filter (\pair -> second pair > 1) ts
 
-factor :: AST -> AST -> AST
-factor (Imparitive instructions ast) term = Imparitive ((Ass_ "0x69" term) : instructions) $ factor ast term
+factor :: AST -> (AST,Int) -> AST
+factor (Imparitive instructions ast) (term,n) = Imparitive ((Ass_ (show n) term) : instructions) $ factor ast (term,n)
 factor (Id_ a) _ = Id_ a
-factor (Binary cons last rast) term = if (Binary cons last rast) == term then (Id_ "0x69") else (Binary cons (factor last term) (factor rast term))
-factor (Unary cons ast) term = if (Unary cons ast) == term then (Id_ "0x69") else (Unary cons (factor ast term))
+factor (Binary cons last rast) (term,n) = if (Binary cons last rast) == term then (Id_ (show n)) else (Binary cons (factor last (term,n)) (factor rast (term,n)))
+factor (Unary cons ast) (term,n) = if (Unary cons ast) == term then (Id_ (show n)) else (Unary cons (factor ast (term,n)))
 -- factor ast term = if ast == term then (Id_ "0x69") else factor ast term
 
 wrapPureAST :: AST -> AST
@@ -115,9 +115,12 @@ wrapPureAST ast = Imparitive [] ast
 
 factor' = factor . wrapPureAST
 
+tag [] _ = []
+tag (x:xs) n = (x,n) : tag xs (n+1)
+
 optimize :: AST -> AST
 -- optimize ast = foldl factor' ast $ subtreesToOptimize $ M.toList $ countSubTrees' ast
-optimize ast = foldl factor (wrapPureAST ast) $ subtreesToOptimize $ M.toList $ countSubTrees' ast
+optimize ast = foldl factor (wrapPureAST ast) $ flip tag 0 $ subtreesToOptimize $ M.toList $ countSubTrees' ast
 
 
 
