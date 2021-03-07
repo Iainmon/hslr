@@ -9,8 +9,8 @@ data Binary = Mul_ | Add_ | Sub_ | Div_ deriving (Eq, Ord)
 instance Show AST where
     show (Id_ str) = str
     show (Ass_ a b) = a ++ " = " ++ show b
-    show (Unary unary a) = show unary ++ show a
-    show (Binary binary a b) = show a ++ show binary ++ show b
+    show (Unary unary a) = show unary ++ "(" ++ show a ++ ")"
+    show (Binary binary a b) = "(" ++ show a ++ " " ++ show binary ++ " " ++ show b ++ ")"
 
 instance Show Unary where
     show Cos_ = "cos"
@@ -28,7 +28,7 @@ instance Show Binary where
 data SyntaxTree = Cos SyntaxTree | Sin SyntaxTree | Length SyntaxTree | Abs SyntaxTree | Neg SyntaxTree | Mul SyntaxTree SyntaxTree | Add SyntaxTree SyntaxTree | Sub SyntaxTree SyntaxTree | Div SyntaxTree SyntaxTree | Ass String SyntaxTree | Id String
 
 ast :: SyntaxTree
-ast = Add (Mul (Cos (Id "uv")) (Sin (Id "uv"))) (Id "1") -- cos(uv) * sin(uv) 
+ast = Add (Mul (Mul (Cos (Id "uv")) (Cos (Id "uv"))) (Sin (Id "uv"))) (Id "1") -- cos(uv) * sin(uv) 
 
 glslAST :: AST -> String
 glslAST (Id_ a) = a
@@ -84,17 +84,19 @@ mget (Just a) = a
 mget (Nothing) = 0
 
 incVal :: AST -> Map AST Int -> Int
-incVal key map = mget $ Map.lookup key map
+incVal key map = (1+) $ mget $ Map.lookup key map
 
 add key hashmap = insert key (incVal key hashmap) hashmap
 
 countSubTrees :: AST -> Map AST Int -> Map AST Int
+countSubTrees (Unary _ a) hashmap   = countSubTrees a $ add a hashmap
+countSubTrees (Binary _ a b) hashmap = countSubTrees b $ add b $ countSubTrees a (add a hashmap) -- insert b (incVal map) (insert a (incVal map) map)
 countSubTrees ast hashmap          = insert ast 1 hashmap
-countSubTrees (Unary _ a) hashmap   = add a hashmap
-countSubTrees (Binary _ a b) hashmap = add b (add a hashmap) -- insert b (incVal map) (insert a (incVal map) map)
 countSubTrees _ hashmap            = hashmap
 
 countSubTrees' ast = countSubTrees ast (empty :: Map AST Int)
+
+ast' = convertToBackendSyntaxTree ast
 
 main = putStrLn $ glslLayer layer
 
