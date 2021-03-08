@@ -1,5 +1,6 @@
 import qualified Data.Map as M
 import Text.Printf
+-- import SyntaxTree
 
 data AST = Unary Unary AST | Binary Binary AST AST | Ass_ String AST | Id_ String | Imparitive [AST] AST deriving (Eq, Ord)
 data Unary = Cos_ | Sin_ | Length_ | Abs_ | Neg_ deriving (Eq, Ord)
@@ -41,7 +42,6 @@ glslAST (Binary Add_ a b) = "(" ++ glslAST a ++ " + " ++ glslAST b ++ ")"
 glslAST (Binary Mul_ a b) = "(" ++ glslAST a ++ " * " ++ glslAST b ++ ")"
 glslAST (Binary Sub_ a b) = "(" ++ glslAST a ++ " - " ++ glslAST b ++ ")"
 glslAST (Binary Div_ a b) = "(" ++ glslAST a ++ " / " ++ glslAST b ++ ")"
-glslAST (Unary Neg_ a) = "(-" ++ glslAST a ++ ")"
 glslAST (Ass_ a b) = a ++ " = " ++ glslAST b ++ ";\n"
 
 data Color = Color { red :: Double
@@ -70,7 +70,6 @@ convertToBackendSyntaxTree (Id a) = Id_ a
 convertToBackendSyntaxTree (Ass a b) = Ass_ a (convertToBackendSyntaxTree b)
 convertToBackendSyntaxTree (Sin a) = Unary Sin_ (convertToBackendSyntaxTree a)
 convertToBackendSyntaxTree (Cos a) = Unary Cos_ (convertToBackendSyntaxTree a)
-convertToBackendSyntaxTree (Sin a) = Unary Abs_ (convertToBackendSyntaxTree a)
 convertToBackendSyntaxTree (Neg a) = Unary Neg_ (convertToBackendSyntaxTree a)
 convertToBackendSyntaxTree (Length a) = Unary Length_ (convertToBackendSyntaxTree a)
 convertToBackendSyntaxTree (Add a b) = Binary Add_ (convertToBackendSyntaxTree a) (convertToBackendSyntaxTree b)
@@ -91,8 +90,8 @@ add key hashmap = M.insert key (incVal key hashmap) hashmap
 countSubTrees :: AST -> M.Map AST Int -> M.Map AST Int
 countSubTrees (Unary _ a) hashmap   = countSubTrees a $ add a hashmap
 countSubTrees (Binary _ a b) hashmap = countSubTrees b $ add b $ countSubTrees a (add a hashmap) -- insert b (incVal map) (insert a (incVal map) map)
+countSubTrees (Id_ _) hashmap            = hashmap
 countSubTrees ast hashmap          = M.insert ast 1 hashmap
-countSubTrees _ hashmap            = hashmap
 
 countSubTrees' ast = countSubTrees ast (M.empty :: M.Map AST Int)
 
