@@ -1,41 +1,49 @@
-module SyntaxTree where
 
-data AST = Unary Unary AST | Binary Binary AST AST | Ass_ String AST | Id_ String | Imparitive [AST] AST deriving (Eq, Ord)
-data Unary = Cos_ | Sin_ | Length_ | Abs_ | Neg_ deriving (Eq, Ord)
-data Binary = Mul_ | Add_ | Sub_ | Div_ deriving (Eq, Ord)
+data Type = Int | Float | Bool | Vector2 | Vector3 | Vector4 deriving (Eq)
+
+data CallType = Unary (SyntaxTree) | Binary (SyntaxTree,SyntaxTree) | Trinary (SyntaxTree,SyntaxTree,SyntaxTree) deriving (Eq)
+data AST = Call String CallType
+    | Id String deriving (Eq)
+data SyntaxTree = 
+     Node Type AST
+    | Imparitive [SyntaxTree] SyntaxTree
+    | Assignment Type String SyntaxTree deriving (Eq)
+
+
+instance Show Type where
+    show Int = "int"
+    show Float = "float"
+    show Bool = "bool"
+    show Vector2 = "vec2"
+    show Vector3 = "vec3"
+    show Vector4 = "vec4"
+
+parenthisize :: [String] -> String
+parenthisize [] = ""
+parenthisize (a:[]) = a ++ ")"
+parenthisize (a:as) = "(" ++ a ++ "," ++ parenthisize as
+
+instance Show SyntaxTree where
+    show (Node _ ast) = show ast
+    show (Imparitive assignments ast) = definitions ++ show ast where definitions = foldl (++) "" $ map (++";\n") $ map show assignments
+    show (Assignment ty name a) = show ty ++ " " ++ name ++ " = " ++ show a
+
+instance Show CallType where
+    show (Unary (a)) = "(" ++ (parenthisize $ map show [a])
+    show (Binary (a,b)) = parenthisize $ map show [a,b]
+    show (Trinary (a,b,c)) = parenthisize $ map show [a,b,c]
 
 instance Show AST where
-    show (Id_ str) = str
-    show (Ass_ a b) = a ++ " = " ++ show b
-    show (Imparitive statements a) = "(" ++ (foldl (++) "" $ map (\x -> show x ++ "\n") statements) ++ "\n" ++ show a ++ ")"
-    show (Unary unary a) = show unary ++ "(" ++ show a ++ ")"
-    show (Binary binary a b) = "(" ++ show a ++ " " ++ show binary ++ " " ++ show b ++ ")"
+    show (Id a) = a
+    -- show (Assignment t name a) = show t ++ " " ++ name ++ " = " ++ show a
+    -- show (Imparitive assignments ast) = definitions ++ show ast where definitions = foldl (++) "" $ map (++";\n") $ map show assignments
+    -- show (Call name (Unary (a)))       = name ++ (parenthisize $ map show [a])
+    -- show (Call name (Binary (a,b)))    = name ++ (parenthisize $ map show [a,b])
+    -- show (Call name (Trinary (a,b,c))) = name ++ (parenthisize $ map show [a,b,c])
+    show (Call name call) = name ++ show call
 
-instance Show Unary where
-    show Cos_ = "cos"
-    show Sin_ = "sin"
-    show Length_ = "length"
-    show Abs_ = "abs"
-    show Neg_ = "-"
+cosine :: SyntaxTree -> SyntaxTree
+cosine (Node Float x) = Node Float $ Call "cos" $ Unary (Node Float x)
+cosine _ = undefined
 
-instance Show Binary where
-    show Mul_ = "*"
-    show Add_ = "+"
-    show Div_ = "/"
-    show Sub_ = "-"
-
-data SyntaxTree = Cos SyntaxTree | Sin SyntaxTree | Length SyntaxTree | Abs SyntaxTree | Neg SyntaxTree | Mul SyntaxTree SyntaxTree | Add SyntaxTree SyntaxTree | Sub SyntaxTree SyntaxTree | Div SyntaxTree SyntaxTree | Ass String SyntaxTree | Id String
-
-glslAST :: AST -> String
-glslAST (Id_ a) = a
-glslAST (Unary cons a) = show cons ++ "(" ++ show a ++ ")"
--- glslAST (Unary Cos_ a) = "cos(" ++ glslAST a ++ ")"
--- glslAST (Unary Sin_ a) = "sin(" ++ glslAST a ++ ")"
--- glslAST (Unary Length_ a) = "length(" ++ glslAST a ++ ")"
--- glslAST (Unary Abs_ a) = "abs(" ++ glslAST a ++ ")"
-glslAST (Binary Add_ a b) = "(" ++ glslAST a ++ " + " ++ glslAST b ++ ")"
-glslAST (Binary Mul_ a b) = "(" ++ glslAST a ++ " * " ++ glslAST b ++ ")"
-glslAST (Binary Sub_ a b) = "(" ++ glslAST a ++ " - " ++ glslAST b ++ ")"
-glslAST (Binary Div_ a b) = "(" ++ glslAST a ++ " / " ++ glslAST b ++ ")"
-glslAST (Unary Neg_ a) = "(-" ++ glslAST a ++ ")"
-glslAST (Ass_ a b) = a ++ " = " ++ glslAST b ++ ";\n"
+ast = Node Float (Id "iain")

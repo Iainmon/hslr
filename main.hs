@@ -4,7 +4,8 @@ import Text.Printf
 
 data AST = Unary Unary AST | Binary Binary AST AST | Ass_ String AST | Id_ String | Imparitive [AST] AST deriving (Eq, Ord)
 data Unary = Cos_ | Sin_ | Length_ | Abs_ | Neg_ deriving (Eq, Ord)
-data Binary = Mul_ | Add_ | Sub_ | Div_ deriving (Eq, Ord)
+data Binary = Mul_ | Add_ | Sub_ | Div_ | Vec2_ deriving (Eq, Ord)
+data Trinary = Slice_ | Mix_ | Vec3_ deriving (Eq, Ord)
 
 instance Show AST where
     show (Id_ str) = str
@@ -25,6 +26,7 @@ instance Show Binary where
     show Add_ = "+"
     show Div_ = "/"
     show Sub_ = "-"
+    show Vec2_ = "vec2"
 
 data SyntaxTree = Cos SyntaxTree | Sin SyntaxTree | Length SyntaxTree | Abs SyntaxTree | Neg SyntaxTree | Mul SyntaxTree SyntaxTree | Add SyntaxTree SyntaxTree | Sub SyntaxTree SyntaxTree | Div SyntaxTree SyntaxTree | Ass String SyntaxTree | Id String
 
@@ -131,3 +133,8 @@ ast' = convertToBackendSyntaxTree ast
 ast'' = convertToBackendSyntaxTree $ Mul (Cos (Cos (Id "a"))) (Cos (Cos (Id "a")))
 main = putStrLn $ glslLayer layer
 
+
+cos :: AST Float -> AST Float
+cos x = Compose Float "cos" x
+
+shape = 
