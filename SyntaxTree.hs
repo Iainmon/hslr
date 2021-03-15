@@ -1,23 +1,24 @@
 -- {-# LANGUAGE FlexibleInstances, UndecidableInstances, MultiParamTypeClasses, RankNTypes #-}
-
-{-# LANGUAGE GADTs #-}
+-- {-# LANGUAGE GADTs #-}
 -- {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeFamilies #-}
+-- {-# LANGUAGE TypeFamilies #-}
 -- {-# LANGUAGE DataKinds #-}
 -- {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TypeSynonymInstances #-}
+-- {-# LANGUAGE TypeSynonymInstances #-}
 -- {-# LANGUAGE FlexibleInstances #-}
 -- {-# LANGUAGE FlexibleContexts #-}
 -- {-# LANGUAGE TypeOperators #-}
 -- {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+-- {-# LANGUAGE MultiParamTypeClasses #-}
 -- {-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE FlexibleInstances, UndecidableInstances, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleInstances, TypeFamilies #-}
 
 
 module SyntaxTree (lit, var, (*), Type(..)) where
 
 import Prelude hiding ((*))
+
+
 data Type = Int | Float | Bool | Vector2 | Vector3 | Vector4 deriving (Eq)
 
 data CallType = Unary (SyntaxTree) | Binary (SyntaxTree,SyntaxTree) | Trinary (SyntaxTree,SyntaxTree,SyntaxTree) deriving (Eq)
@@ -30,55 +31,30 @@ data SyntaxTree =
     | Imparitive [SyntaxTree] SyntaxTree
     | Assignment Type String SyntaxTree deriving (Eq)
 
-class (Show t) => GLiteral t where
+class GLiteral t where
     represent :: t -> String
     syntaxNode :: t -> SyntaxTree
 
-class Vectorable v where
-    type Component v
-    components :: v -> [Component v]
 
-instance (Floating a) => Vectorable (a,a) where
-    type Component (a,a) = a
-    components (a,b) = [a,b]
-
--- type Arithmatic = Int | 
-
--- instance GLiteral Float where
---     represent = show
---     syntaxNode n = Node Float $ Id $ represent n
--- instance GLiteral Double where
---     represent = show
---     syntaxNode n = Node Float $ Id $ represent n
 instance GLiteral Int where
     represent = show
     syntaxNode n = Node Float $ Id $ represent n
-    
--- instance (Num t) => GLiteral t where
---     represent = show
---     syntaxNode n = Node Int $ Id $ represent n
+instance GLiteral Integer where
+    represent = show
+    syntaxNode n = Node Float $ Id $ represent n
+instance GLiteral Float where
+    represent = show
+    syntaxNode n = Node Float $ Id $ represent n
+instance GLiteral Double where
+    represent = show
+    syntaxNode n = Node Float $ Id $ represent n
 
--- instance (Show num, Num num) => GLiteral num where
---     represent = (show :: (Num a, Show a) => a -> String)
---     syntaxNode n = Node Int $ Id $ represent n
-
--- instance GLiteral Bool where
---     represent True = "true"
---     represent False = "false"
---     syntaxNode b = Node Bool $ Id $ show b
-
--- instance (GLiteral a, GLiteral b) => GLiteral (a,b) where
---     represent = show . syntaxNode
---     syntaxNode (a, b) = Node Vector2 $ Call "vec2" $ Binary (syntaxNode a, syntaxNode b)
-    
--- instance (Num a, Num b, GLiteral a, GLiteral b) => GLiteral (a,b) where
---     represent = show . syntaxNode
---     syntaxNode (a,b) = Node Vector2 $ Call "vec2" $ Binary (syntaxNode a,syntaxNode b)
-instance (Vectorable v, Component v ~ (a,a)) => GLiteral a where
+instance (GLiteral a, b ~ a) => GLiteral (a,b) where
     represent (a,b) = show $ syntaxNode (a,b)
     syntaxNode (a,b) = Node Vector2 $ Call "vec2" $ Binary (syntaxNode a, syntaxNode b)
-    
-
+instance (GLiteral a, b ~ a, c ~ a) => GLiteral (a,b,c) where
+    represent (a,b,c) = show $ syntaxNode (a,b,c)
+    syntaxNode (a,b,c) = Node Vector2 $ Call "vec3" $ Trinary (syntaxNode a, syntaxNode b, syntaxNode c)
 
 instance Show Type where
     show Int = "int"
@@ -112,12 +88,34 @@ instance Show AST where
     -- show (Call name (Trinary (a,b,c))) = name ++ (parenthisize $ map show [a,b,c])
     show (Call name call) = name ++ show call
 
-cosine :: SyntaxTree -> SyntaxTree
-cosine (Node Float x) = Node Float $ Call "cos" $ Unary (Node Float x)
-cosine _ = undefined
-
 wrap :: (GLiteral a) => (SyntaxTree -> SyntaxTree) -> a -> SyntaxTree
 wrap f = f . syntaxNode
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cosine :: SyntaxTree -> SyntaxTree
+cosine (Node Float x) = Node Float $ Call "cos" $ Unary (Node Float x)
+cosine (Node Vector2 x) = Node Vector2 $ Call "cos" $ Unary (Node Vector2 x)
+cosine _ = undefined
 
 add (Node consa asta) (Node consb astb) = Node consa $ Call "add" $ Binary (Node consa asta, Node consb astb)
 
