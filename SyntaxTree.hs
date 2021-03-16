@@ -164,11 +164,19 @@ countSubTrees :: SyntaxTree -> M.Map SyntaxTree Int -> M.Map SyntaxTree Int
 -- countSubTrees (Id_ _) hashmap            = hashmap
 -- countSubTrees ast hashmap          = M.insert ast 1 hashmap
 
+-- countSubTrees (Imparitive _ ast) hashmap = countSubTrees ast hashmap
+-- countSubTrees (Node type' (Call name (Unary a))) hashmap         = countSubTrees a $ flip add hashmap (Node type' (Call name (Unary a)))
+-- countSubTrees (Node type' (Call name (Binary (a,b)))) hashmap    = countSubTrees b $ add b $ countSubTrees a $ add a $ flip add hashmap (Node type' (Call name (Binary (a,b))))
+-- countSubTrees (Node type' (Call name (Trinary (a,b,c)))) hashmap = countSubTrees c $ add c $ countSubTrees b $ add b $ countSubTrees a $ add a $ flip add hashmap (Node type' (Call name (Trinary (a,b,c))))
+-- countSubTrees (Node type' (Id name)) hashmap                     = hashmap
+-- countSubTrees ast hashmap                                        = if not $ M.member ast hashmap then M.insert ast 1 hashmap else hashmap
+
+countSubTrees (Imparitive _ ast) hashmap = countSubTrees ast hashmap
 countSubTrees (Node _ (Call _ (Unary a))) hashmap         = countSubTrees a $ add a hashmap
 countSubTrees (Node _ (Call _ (Binary (a,b)))) hashmap    = countSubTrees b $ add b $ countSubTrees a (add a hashmap)
 countSubTrees (Node _ (Call _ (Trinary (a,b,c)))) hashmap = countSubTrees c $ add c $ countSubTrees b $ add b $ countSubTrees a $ add a hashmap
 countSubTrees (Node _ (Id _)) hashmap                     = hashmap
-countSubTrees ast hashmap                                 = M.insert ast 1 hashmap
+countSubTrees ast hashmap                                 = if not $ M.member ast hashmap then M.insert ast 1 hashmap else hashmap
 
 
 countSubTrees' ast = countSubTrees ast (M.empty :: M.Map SyntaxTree Int)
@@ -183,20 +191,23 @@ second (_, x) = x
 subtreesToOptimize :: [(SyntaxTree, Int)] -> [SyntaxTree]
 subtreesToOptimize ts = map first $ filter (\pair -> second pair > 1) ts
 
+cacheSymbol :: Int -> String
+cacheSymbol n = "_cache_" ++ hexShow n
+
 factor :: SyntaxTree -> (SyntaxTree,Int) -> SyntaxTree
-factor (Imparitive instructions ast) (term,n) = Imparitive ((Assignment Void (hexShow n) term) : instructions) $ factor ast (term,n)
+factor (Imparitive instructions ast) ((Node type' subtree),n) = Imparitive ((Assignment type' ("_cache_" ++ hexShow n) term) : instructions) $ factor ast (term,n) where term = (Node type' subtree)
 -- factor (Id_ a) _ = Id_ a
 -- factor (Binary cons last rast) (term,n) = if (Binary cons last rast) == term then (Id_ (hexShow n)) else (Binary cons (factor last (term,n)) (factor rast (term,n)))
 -- factor (Unary cons ast) (term,n) = if (Unary cons ast) == term then (Id_ (hexShow n)) else (Unary cons (factor ast (term,n)))
 factor (Node type' (Id name)) _ = Node type' $ Id name
 factor (Node type' (Call name (Unary arg))) (term,n)    = if (Node type' (Call name (Unary arg))) == term
-                                                            then Node type' $ Id $ hexShow n
+                                                            then Node type' $ Id $ cacheSymbol n
                                                             else Node type' $ Call name $ Unary $ factor arg (term,n)
 factor (Node type' (Call name (Binary args))) (term,n)  = if (Node type' (Call name (Binary args))) == term
-                                                            then Node type' $ Id $ hexShow n
+                                                            then Node type' $ Id $ cacheSymbol n
                                                             else Node type' $ Call name $ Binary $ BF.bimap f f args where f = (flip factor (term,n))
 factor (Node type' (Call name (Trinary args))) (term,n) = if (Node type' (Call name (Trinary args))) == term
-                                                            then Node type' $ Id $ hexShow n
+                                                            then Node type' $ Id $ cacheSymbol n
                                                             else Node type' $ Call name $ Trinary $ BF.bimap f f args where f = (flip factor (term,n))
 factor x _ = x
 
@@ -236,7 +247,7 @@ cachedOperationAssignments taggedSubTrees = map makeAssignment taggedSubTrees wh
 
 optimize :: SyntaxTree -> SyntaxTree
 -- optimize ast = foldl factor' ast $ subtreesToOptimize $ M.toList $ countSubTrees' ast
-optimize ast = foldr (flip factor) (appendInstructions programTree (cachedOperationAssignments occurances)) $ flip tag 1 $ subtreesToOptimize occurances
+optimize ast = foldr (flip factor) programTree $ flip tag 1 $ subtreesToOptimize occurances
     where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
           programTree = wrapPureAST ast
 -- optimize ast = foldl factor (wrapPureAST ast) $ M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
@@ -254,5 +265,5 @@ generateProgram ast = foldr (++) "" $ map (++"\n") sourceParts where
         ,"out vec4 gl_FragColor;"
         ,"vec3 program(void);"
         ,"void main () { gl_FragColor = program(); } "
-        ,"vec3 program(void) { \n" ++ compile ast ++ "}"
-        ]
+        ,"vec3 program(void) { \n" ++ indentedFunctionBody ++ "}"
+        ] where indentedFunctionBody = unlines $ map ("\t"++) $ lines $ compile ast
