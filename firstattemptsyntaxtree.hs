@@ -7,7 +7,7 @@ data Binary = Mul_ | Add_ | Sub_ | Div_ deriving (Eq, Ord)
 instance Show AST where
     show (Id_ str) = str
     show (Ass_ a b) = a ++ " = " ++ show b
-    show (Imparitive statements a) = "(" ++ (foldl (++) "" $ map (\x -> show x ++ "\n") statements) ++ "\n" ++ show a ++ ")"
+    show (Imparitive statements a) = "(" ++ (foldr (++) "" $ map (\x -> show x ++ "\n") statements) ++ "\n" ++ show a ++ ")"
     show (Unary unary a) = show unary ++ "(" ++ show a ++ ")"
     show (Binary binary a b) = "(" ++ show a ++ " " ++ show binary ++ " " ++ show b ++ ")"
 
