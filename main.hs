@@ -1,4 +1,5 @@
 {-# LANGUAGE ExtendedDefaultRules #-}
+
 module Main where
 import SyntaxTree
 import Language
@@ -6,31 +7,16 @@ import Compiler
 import Optimizer
 import Control.Monad (when)
 import Prelude hiding (cos)
-import Data.Sort
--- program = cosine $ wrap cosine 1
 
-
--- main = putStrLn $ generateProgram $ optimize $ program
 color = var Float "color"
 uv = var Float "uv"
+uv_x = var Float "uv.x"
+time = var Float "u_time"
 cos = cosine
-comp f = cos . f . cos . f . cos . f . cos
-
-squaredUV = uv * uv
-cosSum = ((cosine squaredUV) + (cosine squaredUV)) + ((cosine squaredUV) + (cosine squaredUV))
--- program = cosSum + cosSum * (cosine cosSum) + (comp cos uv) + (comp cos $ comp cosine uv)
-program = (cos (color * color)) + (cos (color * color)) + (cos (cos (cos (color * color)))) + (cos (cos (cos (color * color))))
-
-programA = generateProgram program
-programB = generateProgram $ optimize program
-programC = (generateProgram . optimize . optimize . optimize) program
--- main = putStrLn $ generateProgram $ optimize $ optimize $ program
--- main = do
---           mapM_ putStrLn $ [programA, programB, programC]
---           print $ programC == programB
+program = vector (c * (lit 0.6),c * (lit 0.3),c * (lit 0.5)) where c = cos $ time * (lit 0.4) + (uv_x * 30)
 
 
 main = do
-    let newContents = programB
+    let newContents = generateProgram program
     when (length newContents > 0) $
-        writeFile "out.glsl" newContents
+        writeFile "out.frag" newContents

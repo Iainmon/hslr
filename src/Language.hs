@@ -14,10 +14,10 @@ class GLiteral t where
     syntaxNode :: t -> SyntaxTree
 
 instance GLiteral Int where
-    represent = show
+    represent = (++".0") . show
     syntaxNode n = Node Float $ Id $ represent n
 instance GLiteral Integer where
-    represent = show
+    represent = (++".0") . show
     syntaxNode n = Node Float $ Id $ represent n
 instance GLiteral Float where
     represent = show
@@ -68,3 +68,6 @@ appendInstruction ast newInstruction = appendInstructions ast [newInstruction]
 
 wrap :: (GLiteral a) => (SyntaxTree -> SyntaxTree) -> a -> SyntaxTree
 wrap f = f . syntaxNode
+
+vector :: (GLiteral a) => a -> SyntaxTree
+vector = syntaxNode
