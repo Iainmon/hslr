@@ -53,6 +53,10 @@ instance Num SyntaxTree where
     signum = id
     fromInteger n = syntaxNode n
 
+instance Fractional SyntaxTree where
+    (/) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "div" $ Binary (Node lhsType lhs, Node rhsType rhs)
+    fromRational a = Node Float $ Id $ show $ realToFrac a
+
 wrapPureAST :: SyntaxTree -> SyntaxTree
 wrapPureAST (Imparitive instructions ast) = Imparitive instructions ast
 wrapPureAST ast = Imparitive [] ast
@@ -71,3 +75,13 @@ wrap f = f . syntaxNode
 
 vector :: (GLiteral a) => a -> SyntaxTree
 vector = syntaxNode
+
+var :: Type -> String -> SyntaxTree
+var ty name = Node ty $ Id name
+
+
+iden :: String -> AST
+iden s = Id s
+
+lit :: (GLiteral a) => a -> SyntaxTree
+lit = syntaxNode
