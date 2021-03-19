@@ -13,8 +13,8 @@
 -- {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE FlexibleInstances, TypeFamilies #-}
 
-
-module SyntaxTree where
+====3
+module SyntaxTree_ where
 -- (lit, var, SyntaxTree, compile, generateProgram, wrap, cosine, optimize, GLiteral,  Type(..))
 -- import Prelude hiding ((*))
 import qualified Data.Map as M

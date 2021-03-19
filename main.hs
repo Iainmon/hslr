@@ -1,5 +1,9 @@
 {-# LANGUAGE ExtendedDefaultRules #-}
+module Main where
 import SyntaxTree
+import Language
+import Compiler
+import Optimizer
 import Control.Monad (when)
 import Prelude hiding (cos)
 import Data.Sort
@@ -15,7 +19,7 @@ comp f = cos . f . cos . f . cos . f . cos
 squaredUV = uv * uv
 cosSum = ((cosine squaredUV) + (cosine squaredUV)) + ((cosine squaredUV) + (cosine squaredUV))
 -- program = cosSum + cosSum * (cosine cosSum) + (comp cos uv) + (comp cos $ comp cosine uv)
-program = (cos (color * color)) + (cos (color * color))
+program = (cos (color * color)) + (cos (color * color)) + (cos (cos (cos (color * color)))) + (cos (cos (cos (color * color))))
 
 programA = generateProgram program
 programB = generateProgram $ optimize program

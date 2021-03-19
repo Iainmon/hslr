@@ -32,5 +32,7 @@ executable HaskellShadingLanguage
         base ^>=4.14.1.0
         , sort ^>=1.0.0.0
         , containers
-    hs-source-dirs:   .
+    hs-source-dirs:
+        .
+        , src
     default-language: Haskell2010
