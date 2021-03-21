@@ -46,6 +46,20 @@ class Magnitude a where
 
 tupleMap f = BF.bimap f f
 
+typeof :: SyntaxTree -> Type
+typeof (Node type' _) = type'
+typeof _ = Void
+
+unwrapTypedNode :: SyntaxTree -> Maybe AST
+unwrapTypedNode (Node _ ast) = Just ast
+unwrapTypedNode (Assignment _ _ _) = Nothing
+unwrapTypedNode (Imparitive _ _) = Nothing
+
+nameof :: AST -> String
+nameof (Call name _) = name
+nameof (Id name) = name
+
+
 -- instance Functor CallType where
 --     fmap f (Unary a) = Unary $ fmap f a
 --     fmap f (Binary args) = Binary $ tupleMap (fmap f) args
@@ -68,3 +82,10 @@ instance Magnitude SyntaxTree where
 instance Ord SyntaxTree where
     compare a b = compare (magnitude a) (magnitude b)
 
+-- instance Functor SyntaxTree where
+--     fmap f (Node type' (Call name args)) = f $ Node type' $ Call name $ map (fmap f) args
+--     fmap f (Assignment type' name ast) = f $ Assignment type' name $ fmap f ast
+--     fmap f (Imparitive assignments ast) = f $ Imparitive (map (fmap f) assignments) (fmap f ast)
+
+-- instance Functor AST where
+--     fmap f (Call name args) = f $ Call name $ map (fmap f) args

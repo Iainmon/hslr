@@ -40,10 +40,14 @@ isInfix _ = Nothing
 parensWrap "" = ""
 parensWrap a  = "(" ++ a ++ ")"
 
+joinInfixList :: String -> [String] -> String
+joinInfixList op [] = ""
+joinInfixList op (a:as) = foldl (\n -> \m -> n ++ " " ++ op ++ " " ++ m) a as
+
 instance Show AST where
     show (Id a) = a
     show (Call name args) = shownCall where
         shownCall = case isInfix (Call name args) of
                 Just operator -> showBinaryInfix operator args
                 Nothing       -> name ++ (parenthisize $ map show args)
-                where showBinaryInfix operator [lhs, rhs] = parensWrap $ show lhs ++ " " ++ operator ++ " " ++ show rhs
+                where showBinaryInfix operator args = parensWrap $ joinInfixList operator $ map show args

@@ -71,3 +71,27 @@ optimize ast = foldr (flip factor) programTree $ flip tag 1 $ reverse $ sort $ s
           programTree = wrapPureAST ast
 
 hexShow n = printf "0x%x" n
+
+-- Use abstract algebra to work this, rather than just defining cases
+
+commOps = ["mul", "add"]
+
+callerArguments :: SyntaxTree -> [SyntaxTree]
+callerArguments (Node _ (Call _ args)) = args
+callerArguments _ = []
+
+flattenCommutitiveOperations :: SyntaxTree -> SyntaxTree
+flattenCommutitiveOperations (Node type' (Call name args)) =
+    if elem name commOps
+    then Node type' $ Call name $ (++) regexNodes $ foldl (++) [] $ map callerArguments redexNodes
+    else Node type' $ Call name $ map flattenCommutitiveOperations args
+        where flattenedChildren = map flattenCommutitiveOperations args
+              redexNodes = filter ((Just name ==) . (fmap nameof) . unwrapTypedNode) flattenedChildren
+              regexNodes = filter ((Just name /=) . (fmap nameof) . unwrapTypedNode) flattenedChildren
+flattenCommutitiveOperations (Node type' (Id name)) = Node type' $ Id name
+flattenCommutitiveOperations (Assignment type' name ast) = Assignment type' name $ flattenCommutitiveOperations ast
+flattenCommutitiveOperations (Imparitive assignments ast) = Imparitive (map flattenCommutitiveOperations assignments) (flattenCommutitiveOperations ast)
+
+    -- flattenCommutitiveOperations (Node type' (Call name args)) =
+--     if elem name commOps
+--     then args
