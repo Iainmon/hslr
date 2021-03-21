@@ -39,7 +39,17 @@ length (Node type' x) = makeFunctionApplication "length" type' Float $ Node type
 normalize :: Function
 normalize (Node type' x) = makeFunctionApplication "normalize" type' Float $ Node type' x
 
+smoothstep :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
+smoothstep (Node Float a) (Node Float b) (Node Float x) = Node Float $ Call "smoothstep" [(Node Float a), (Node Float b), (Node Float x)]
 
+mix :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
+mix (Node type' a) (Node type'' b) (Node Float x) = Node (if type' == type'' then type' else Void) $ Call "mix" [(Node type' a), (Node type'' b), (Node Float x)]
+
+abs :: Function
+abs (Node type' x) = makeFunctionApplication "abs" type' type' $ Node type' x
+
+perlin :: Function
+perlin (Node Vector2 x) = Node Float $ Call "perlin" [Node Vector3 x]
 data SwizzleAccessor = Accessor String Type
 
 instance GLiteral SwizzleAccessor where

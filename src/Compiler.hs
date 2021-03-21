@@ -14,6 +14,7 @@ generateProgram :: SyntaxTree -> String
 generateProgram ast = foldr (++) "" $ map (++"\n") sourceParts where
     sourceParts = [
         "#include \"runtime.glsl\""
+        ,"#include \"noise.glsl\""
         -- ,"out vec4 gl_FragColor;"
         -- ,"vec3 program(void);"
         -- ,"void main () { gl_FragColor = program(); } "

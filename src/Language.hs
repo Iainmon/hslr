@@ -42,7 +42,7 @@ instance (GLiteral a, b ~ a, c ~ a) => GLiteral (a,b,c) where
     syntaxNode (a,b,c) = Node Vector2 $ Call "vec3" $ map syntaxNode [a,b,c]
 
 
-precidence typeA typeB = typeA
+precidence typeA typeB = if typeA > typeB then typeA else typeB
 instance Num SyntaxTree where
     -- (*) :: SyntaxTree -> SyntaxTree -> SyntaxTree
     (*) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "mul" [Node lhsType lhs, Node rhsType rhs]
