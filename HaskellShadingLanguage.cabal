@@ -20,10 +20,16 @@ maintainer:         moncrief@oregonstate.edu
 extra-source-files: CHANGELOG.md
 
 executable HaskellShadingLanguage
-    main-is:          main.hs
+    main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules:
+        SyntaxTree
+        , Compiler
+        , Language
+        , Runtime
+        , CodeGeneration
+        , Optimizer
 
 
     -- LANGUAGE extensions used by modules in this package.
@@ -33,6 +39,6 @@ executable HaskellShadingLanguage
         , sort ^>=1.0.0.0
         , containers
     hs-source-dirs:
-        app
+        .
         , src
     default-language: Haskell2010

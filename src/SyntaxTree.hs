@@ -27,6 +27,8 @@ data Type = Void | Int | Float | Bool | Vector2 | Vector3 | Vector4 deriving (Eq
 data CallType = Unary (SyntaxTree) | Binary (SyntaxTree,SyntaxTree) | Trinary (SyntaxTree,SyntaxTree,SyntaxTree) deriving (Eq, Ord)
 data AST = Call String CallType | Id String deriving (Eq,Ord)
 
+data RoseTree a = RT Int [a]
+
 -- type Arithmatic = forall t. Num t
 
 data SyntaxTree = 
