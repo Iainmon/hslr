@@ -15,10 +15,10 @@ instance Show SyntaxTree where
     show (Imparitive assignments ast) = definitions ++ show ast where definitions = foldr (++) "" $ map (++";\n") $ map show assignments
     show (Assignment ty name a) = show ty ++ " " ++ name ++ " = " ++ show a
 
-instance Show CallType where
-    show (Unary (a)) = parenthisize $ map show [a]
-    show (Binary (a,b)) = parenthisize $ map show [a,b]
-    show (Trinary (a,b,c)) = parenthisize $ map show [a,b,c]
+-- instance Show CallType where
+--     show (Unary (a)) = parenthisize $ map show [a]
+--     show (Binary (a,b)) = parenthisize $ map show [a,b]
+--     show (Trinary (a,b,c)) = parenthisize $ map show [a,b,c]
 
 instance Show Type where
     show Int = "int"
@@ -34,6 +34,7 @@ isInfix (Call "add" _) = Just ['+']
 isInfix (Call "mul" _) = Just ['*']
 isInfix (Call "sub" _) = Just ['-']
 isInfix (Call "div" _) = Just ['/']
+isInfix (Call "swizzle" _) = Just ['.']
 isInfix _ = Nothing
 
 parensWrap "" = ""
@@ -41,8 +42,8 @@ parensWrap a  = "(" ++ a ++ ")"
 
 instance Show AST where
     show (Id a) = a
-    show (Call name call) = shownCall where
-        shownCall = case isInfix (Call name call) of
-                Just operator -> showBinaryInfix operator call
-                Nothing       -> name ++ show call
-                where showBinaryInfix operator (Binary (lhs, rhs)) = parensWrap $ show lhs ++ " " ++ operator ++ " " ++ show rhs
+    show (Call name args) = shownCall where
+        shownCall = case isInfix (Call name args) of
+                Just operator -> showBinaryInfix operator args
+                Nothing       -> name ++ (parenthisize $ map show args)
+                where showBinaryInfix operator [lhs, rhs] = parensWrap $ show lhs ++ " " ++ operator ++ " " ++ show rhs

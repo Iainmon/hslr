@@ -36,25 +36,25 @@ instance GLiteral SyntaxTree where
 
 instance (GLiteral a, b ~ a) => GLiteral (a,b) where
     represent (a,b) = show $ syntaxNode (a,b)
-    syntaxNode (a,b) = Node Vector2 $ Call "vec2" $ Binary (syntaxNode a, syntaxNode b)
+    syntaxNode (a,b) = Node Vector2 $ Call "vec2" $ map syntaxNode [a,b]
 instance (GLiteral a, b ~ a, c ~ a) => GLiteral (a,b,c) where
     represent (a,b,c) = show $ syntaxNode (a,b,c)
-    syntaxNode (a,b,c) = Node Vector2 $ Call "vec3" $ Trinary (syntaxNode a, syntaxNode b, syntaxNode c)
+    syntaxNode (a,b,c) = Node Vector2 $ Call "vec3" $ map syntaxNode [a,b,c]
 
 
 precidence typeA typeB = typeA
 instance Num SyntaxTree where
     -- (*) :: SyntaxTree -> SyntaxTree -> SyntaxTree
-    (*) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "mul" $ Binary (Node lhsType lhs, Node rhsType rhs)
+    (*) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "mul" [Node lhsType lhs, Node rhsType rhs]
     -- (+) :: SyntaxTree -> SyntaxTree -> SyntaxTree
-    (+) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "add" $ Binary (Node lhsType lhs, Node rhsType rhs)
-    (-) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "sub" $ Binary (Node lhsType lhs, Node rhsType rhs)
-    abs (Node type' node) = Node type' $ Call "abs" $ Unary $ Node type' node
+    (+) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "add" [Node lhsType lhs, Node rhsType rhs]
+    (-) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "sub" [Node lhsType lhs, Node rhsType rhs]
+    abs (Node type' node) = Node type' $ Call "abs" [ Node type' node ]
     signum = id
     fromInteger n = syntaxNode n
 
 instance Fractional SyntaxTree where
-    (/) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "div" $ Binary (Node lhsType lhs, Node rhsType rhs)
+    (/) (Node lhsType lhs) (Node rhsType rhs) = Node (precidence lhsType rhsType) $ Call "div" [Node lhsType lhs, Node rhsType rhs]
     fromRational a = Node Float $ Id $ show $ realToFrac a
 
 wrapPureAST :: SyntaxTree -> SyntaxTree

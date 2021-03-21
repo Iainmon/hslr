@@ -23,9 +23,10 @@ add key hashmap = M.insert key (incVal key hashmap) hashmap
 
 countSubTrees :: SyntaxTree -> M.Map SyntaxTree Int -> M.Map SyntaxTree Int
 countSubTrees (Imparitive _ ast) hashmap = countSubTrees ast hashmap
-countSubTrees (Node type' (Call name (Unary a))) hashmap         = countSubTrees a $ flip add hashmap (Node type' (Call name (Unary a))) 
-countSubTrees (Node type' (Call name (Binary (a,b)))) hashmap    = countSubTrees b $ countSubTrees a $ flip add hashmap (Node type' (Call name (Binary (a,b))))
-countSubTrees (Node type' (Call name (Trinary (a,b,c)))) hashmap = countSubTrees c $ countSubTrees b $ countSubTrees a $ flip add hashmap (Node type' (Call name (Trinary (a,b,c))))
+countSubTrees (Node type' (Call name args)) hashmap = foldl (\hm -> \arg -> countSubTrees arg hm) start args where start = flip add hashmap (Node type' (Call name args))
+-- countSubTrees (Node type' (Call name (Unary a))) hashmap         = countSubTrees a $ flip add hashmap (Node type' (Call name (Unary a))) 
+-- countSubTrees (Node type' (Call name (Binary (a,b)))) hashmap    = countSubTrees b $ countSubTrees a $ flip add hashmap (Node type' (Call name (Binary (a,b))))
+-- countSubTrees (Node type' (Call name (Trinary (a,b,c)))) hashmap = countSubTrees c $ countSubTrees b $ countSubTrees a $ flip add hashmap (Node type' (Call name (Trinary (a,b,c))))
 countSubTrees (Node type' (Id name)) hashmap                     = hashmap
 countSubTrees ast hashmap                                        = if not $ M.member ast hashmap then M.insert ast 1 hashmap else hashmap
 
@@ -50,15 +51,9 @@ factor (Imparitive instructions ast) ((Node type' subtree),n) = Imparitive newIn
           newInstruction = Assignment type' ("_cache_" ++ hexShow n) term
           newInstructions = if not $ elem term instructions then (newInstruction : instructions) else instructions
 factor (Node type' (Id name)) _ = Node type' $ Id name
-factor (Node type' (Call name (Unary arg))) (term,n)    = if (Node type' (Call name (Unary arg))) == term
-                                                            then Node type' $ Id $ cacheSymbol n
-                                                            else Node type' $ Call name $ Unary $ factor arg (term,n)
-factor (Node type' (Call name (Binary args))) (term,n)  = if (Node type' (Call name (Binary args))) == term
-                                                            then Node type' $ Id $ cacheSymbol n
-                                                            else Node type' $ Call name $ Binary $ BF.bimap f f args where f = (flip factor (term,n))
-factor (Node type' (Call name (Trinary args))) (term,n) = if (Node type' (Call name (Trinary args))) == term
-                                                            then Node type' $ Id $ cacheSymbol n
-                                                            else Node type' $ Call name $ Trinary $ BF.bimap f f args where f = (flip factor (term,n))
+factor (Node type' (Call name args)) (term,n) = if (Node type' (Call name args)) == term
+                                                then Node type' $ Id $ cacheSymbol n
+                                                else Node type' $ Call name $ fmap f args where f = (flip factor (term,n))
 factor x _ = x
 
 factor' = factor . wrapPureAST

@@ -24,10 +24,14 @@ import Data.Sort
 
 data Type = Void | Int | Float | Bool | Vector2 | Vector3 | Vector4 deriving (Eq,Ord)
 
-data CallType = Unary (SyntaxTree) | Binary (SyntaxTree,SyntaxTree) | Trinary (SyntaxTree,SyntaxTree,SyntaxTree) deriving (Eq, Ord)
-data AST = Call String CallType | Id String deriving (Eq,Ord)
+-- data CallType = Unary (SyntaxTree) | Binary (SyntaxTree,SyntaxTree) | Trinary (SyntaxTree,SyntaxTree,SyntaxTree) deriving (Eq, Ord)
+data AST = Call String [SyntaxTree] | Id String deriving (Eq,Ord)
 
 data RoseTree a = RT Int [a]
+
+-- Same thing
+type Routine = SyntaxTree -> SyntaxTree
+type Function = Routine
 
 -- type Arithmatic = forall t. Num t
 
@@ -52,13 +56,11 @@ tupleMap f = BF.bimap f f
 --     fmap f (Node type' (Id name)) = 
 
 
-instance Magnitude CallType where
-    magnitude (Unary a) = 1 + magnitude a
-    magnitude (Binary (a,b))  = foldr (+) 1 $ map magnitude [a,b]
-    magnitude (Trinary (a,b,c)) = foldr (+) 1 $ map magnitude [a,b,c]
+-- instance Magnitude CallType where
+--     magnitude (Unary a) = (1+) $ map magnitude a
 
 instance Magnitude SyntaxTree where
-    magnitude (Node _ (Call _ call)) = magnitude call
+    magnitude (Node _ (Call _ args)) = foldr (+) 1 $ map magnitude args
     magnitude (Node _ (Id _ ))   = 1
     magnitude (Imparitive _ _)   = 0
     magnitude (Assignment _ _ _) = 0
