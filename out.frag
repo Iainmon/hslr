@@ -1,6 +1,8 @@
 #include "runtime.glsl"
 #include "noise.glsl"
 void program(inout vec3 color) { 
+	vec2 _cache_0x1 = (20.0 * (uv - vec2(0.5, 0.5)));
+	float _cache_0x2 = (0.5 * sin(u_time));
 	
-	color = mix(vec3(0.988, 0.729, 1.17e-2), vec3(1.0, 1.0, 1.0), smoothstep(((0.2 * perlin((10.0 + (uv - vec2(0.5, 0.5)) + u_time))) + (0.2 * perlin(((uv - vec2(0.5, 0.5)) + u_time))) + 0.2 + (((0.5 * sin(u_time)) + 0.5) * 0.2)), (2.0e-2 + (0.2 * perlin((10.0 + (uv - vec2(0.5, 0.5)) + u_time))) + (0.2 * perlin(((uv - vec2(0.5, 0.5)) + u_time))) + 0.2 + (((0.5 * sin(u_time)) + 0.5) * 0.2)), sqrt(((((uv - vec2(0.5, 0.5)) . x) * ((uv - vec2(0.5, 0.5)) . x)) + (((uv - vec2(0.5, 0.5)) . y) * ((uv - vec2(0.5, 0.5)) . y))))));
+	color = mix(vec3(0.988, 0.729, 1.17e-2), vec3(1.0, 1.0, 1.0), smoothstep((_cache_0x2 + 0.5), (1.0e-3 + _cache_0x2 + 0.5), perlin(((uv * 10.0) + perlin((_cache_0x1 + u_time))))));
 }

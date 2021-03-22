@@ -50,6 +50,8 @@ abs (Node type' x) = makeFunctionApplication "abs" type' type' $ Node type' x
 
 perlin :: Function
 perlin (Node Vector2 x) = Node Float $ Call "perlin" [Node Vector3 x]
+perlin x = makeUndefinedError "perlin" x
+
 data SwizzleAccessor = Accessor String Type
 
 instance GLiteral SwizzleAccessor where
@@ -61,6 +63,9 @@ swizzle :: SyntaxTree -> SwizzleAccessor -> SyntaxTree
 swizzle lhs (Accessor name type') = Node type' $ Call "swizzle" [lhs, syntaxNode (Accessor name type')]
 
 (.) = swizzle
+(\.) = swizzle
+(.>) = swizzle
+(.->) = swizzle
 
 -- accessors
 x = Accessor "x" Float

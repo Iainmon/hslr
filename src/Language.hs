@@ -39,7 +39,7 @@ instance (GLiteral a, b ~ a) => GLiteral (a,b) where
     syntaxNode (a,b) = Node Vector2 $ Call "vec2" $ map syntaxNode [a,b]
 instance (GLiteral a, b ~ a, c ~ a) => GLiteral (a,b,c) where
     represent (a,b,c) = show $ syntaxNode (a,b,c)
-    syntaxNode (a,b,c) = Node Vector2 $ Call "vec3" $ map syntaxNode [a,b,c]
+    syntaxNode (a,b,c) = Node Vector3 $ Call "vec3" $ map syntaxNode [a,b,c]
 
 
 precidence typeA typeB = if typeA > typeB then typeA else typeB

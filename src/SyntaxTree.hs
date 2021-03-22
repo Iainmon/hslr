@@ -82,6 +82,14 @@ instance Magnitude SyntaxTree where
 instance Ord SyntaxTree where
     compare a b = compare (magnitude a) (magnitude b)
 
+class Accept a where
+    accept :: (a -> a) -> a -> a
+
+instance Accept SyntaxTree where
+    accept f (Node type' (Call name args)) = f $ Node type' $ Call name $ map f args
+    accept f (Node type' (Id name)) = f $ Node type' $ Id name
+    accept f (Imparitive assignments ast) = f $ Imparitive (map (accept f) assignments) (accept f ast)
+    accept f (Assignment type' name ast) = f $ Assignment type' name $ accept f ast
 -- instance Functor SyntaxTree where
 --     fmap f (Node type' (Call name args)) = f $ Node type' $ Call name $ map (fmap f) args
 --     fmap f (Assignment type' name ast) = f $ Assignment type' name $ fmap f ast
