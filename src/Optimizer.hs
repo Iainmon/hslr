@@ -55,8 +55,56 @@ factor (Node type' (Call name args)) (term,n) = if (Node type' (Call name args))
                                                 then Node type' $ Id $ cacheSymbol n
                                                 else Node type' $ Call name $ fmap f args where f = (flip factor (term,n))
 factor x _ = x
-
 factor' = factor . wrapPureAST
+
+
+-- replaceSubTree :: SyntaxTree -> SyntaxTree -> SyntaxTree
+-- replaceSubTree (Imparitive instructions ast) ((Node type' subtree),n) = Imparitive newInstructions $ factor ast (term,n)
+--     where term = (Node type' subtree)
+--           newInstruction = Assignment type' ("_cache_" ++ hexShow n) term
+--           newInstructions = if not $ elem term instructions then (newInstruction : instructions) else instructions
+-- replaceSubTree (Node type' (Id name)) _ = Node type' $ Id name
+-- replaceSubTree (Node type' (Call name args)) (term,n) = if (Node type' (Call name args)) == term
+--                                                 then Node type' $ Id $ cacheSymbol n
+--                                                 else Node type' $ Call name $ fmap f args where f = (flip factor (term,n))
+-- replaceSubTree x _ = x
+
+-- replaceSubTree (Node type' (Id name)) 
+
+replaceSubTree' :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
+replaceSubTree' old new subTree = if subTree == old then new else subTree
+replaceSubTree :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
+replaceSubTree old new = accept (replaceSubTree' old new) 
+
+factor'' = replaceSubTree
+
+constructTermIdPair :: (SyntaxTree, String) -> (SyntaxTree, SyntaxTree)
+constructTermIdPair (term, name) = (term, var (typeof term) name)
+
+maxIndex xs = head $ filter ((== maximum xs) . (xs !!)) [0..]
+
+-- This only really works well if the terms are sorted in accending order
+-- Yikes this is super slow
+deflateTerms terms syntaxTree = (deflatedSyntaxTree,deflated)
+    where deflatedSyntaxTree = syntaxTree -- foldr factorOutPair syntaxTree deflated
+          identifierNames = map cacheSymbol [1..length terms]
+          identifiers = reverse $ map constructTermIdPair $ zip terms identifierNames
+          factorOutPair (term,iden) tree = if tree == term then tree else factor'' term iden tree
+          deflated = reverse $ flip map identifiers $ \i -> (foldr (\j -> factorOutPair j) (first i) (drop (mget $ List.elemIndex i identifiers) identifiers), second i)
+          -- flip zip (map second identifiers) $ map (\targetNode -> foldr factorOutPair (first targetNode) identifiers) $ identifiers
+
+optimize' ast = deflateTerms repetativeSubTrees ast
+    where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
+          repetativeSubTrees = sort $ subtreesToOptimize occurances
+
+makeAssignment :: (SyntaxTree,SyntaxTree) -> SyntaxTree
+makeAssignment ((Node type' subtree), (Node _ (Id name))) = Assignment type' name (Node type' subtree)
+
+optimize'' (Imparitive assignments ast) = cacheDeflatedTerms $ optimize' ast
+    where cacheDeflatedTerms (deflatedTree,deflatedTerms) = Imparitive (assignments ++ (map makeAssignment deflatedTerms)) deflatedTree
+
+optimize :: SyntaxTree -> SyntaxTree
+optimize = optimize'' . wrapPureAST
 
 tag [] _ = []
 tag (x:xs) n = (x,n) : tag xs (n+1)
@@ -65,10 +113,10 @@ cachedOperationAssignments :: [(SyntaxTree, Int)] -> [SyntaxTree]
 cachedOperationAssignments taggedSubTrees = map makeAssignment taggedSubTrees where
     makeAssignment ((Node type' subtree), n) = Assignment type' ("cahce_" ++ hexShow n) (Node type' subtree)
 
-optimize :: SyntaxTree -> SyntaxTree
-optimize ast = foldr (flip factor) programTree $ flip tag 1 $ reverse $ sort $ subtreesToOptimize occurances
-    where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
-          programTree = wrapPureAST ast
+-- optimize :: SyntaxTree -> SyntaxTree
+-- optimize ast = foldr (flip factor) programTree $ flip tag 1 $ reverse $ sort $ subtreesToOptimize occurances
+--     where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
+--           programTree = wrapPureAST ast
 
 hexShow n = printf "0x%x" n
 
