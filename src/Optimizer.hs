@@ -86,7 +86,7 @@ maxIndex xs = head $ filter ((== maximum xs) . (xs !!)) [0..]
 -- This only really works well if the terms are sorted in accending order
 -- Yikes this is super slow
 deflateTerms terms syntaxTree = (deflatedSyntaxTree,deflated)
-    where deflatedSyntaxTree = foldr factorOutPair syntaxTree $ deflated
+    where deflatedSyntaxTree = foldr factorOutPair syntaxTree $ reverse deflated
           identifierNames = map cacheSymbol [1..length terms]
           identifiers = map constructTermIdPair $ zip terms identifierNames
           factorOutPair (term,iden) tree = if tree == term then tree else factor'' term iden tree
