@@ -1,7 +1,0 @@
-#include "runtime.glsl"
-void program(inout vec3 color) { 
-	float _cache_0x1 = (cos(((u_time * 0.4) + (uv.x * 30.0))) * 0.5);
-	float _cache_0x2 = (uv.x * 30.0);
-	
-	color = vec3((cos(((u_time * 0.4) + (uv.x * 30.0))) * 0.6), (cos(((u_time * 0.4) + _cache_0x2)) * 0.3), (cos(((u_time * 0.4) + _cache_0x2)) * 0.5));
-}

@@ -92,13 +92,7 @@ instance Accept SyntaxTree where
     accept f (Node type' (Id name)) = f $ Node type' $ Id name
     accept f (Imparitive assignments ast) = Imparitive (map (f) assignments) (f ast)
     accept f (Assignment type' name ast) = Assignment type' name $ f ast
-
-
-    -- postAccept f (Node type' (Call name args)) = f $ Node type' $ Call name $ map (postAccept f) args
-    -- postAccept f (Node type' (Id name)) = f $ Node type' $ Id name
-    -- postAccept f (Imparitive assignments ast) = f $ Imparitive (map (postAccept f) assignments) (postAccept f ast)
-    -- postAccept f (Assignment type' name ast) = f $ Assignment type' name $ postAccept f ast
-
+    
     postAccept f (Node type' (Id name)) = f $ Node type' $ Id name
     postAccept f ast = f $ accept (postAccept f) ast
 

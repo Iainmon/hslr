@@ -13,8 +13,8 @@ compile ast = "\ncolor = " ++ show ast ++ ";\n"
 generateProgram :: SyntaxTree -> String
 generateProgram ast = foldr (++) "" $ map (++"\n") sourceParts where
     sourceParts = [
-        "#include \"runtime.glsl\""
-        ,"#include \"noise.glsl\""
+        "#include \"lib/runtime.glsl\""
+        ,"#include \"lib/noise.glsl\""
         -- ,"out vec4 gl_FragColor;"
         -- ,"vec3 program(void);"
         -- ,"void main () { gl_FragColor = program(); } "
