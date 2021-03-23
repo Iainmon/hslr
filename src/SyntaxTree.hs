@@ -83,13 +83,28 @@ instance Ord SyntaxTree where
     compare a b = compare (magnitude a) (magnitude b)
 
 class Accept a where
+    preAccept :: (a -> a) -> a -> a
+    postAccept :: (a -> a) -> a -> a
     accept :: (a -> a) -> a -> a
 
 instance Accept SyntaxTree where
-    accept f (Node type' (Call name args)) = f $ Node type' $ Call name $ map (accept f) args
+    accept f (Node type' (Call name args)) = Node type' $ Call name $ map f args
     accept f (Node type' (Id name)) = f $ Node type' $ Id name
-    accept f (Imparitive assignments ast) = f $ Imparitive (map (accept f) assignments) (accept f ast)
-    accept f (Assignment type' name ast) = f $ Assignment type' name $ accept f ast
+    accept f (Imparitive assignments ast) = Imparitive (map (f) assignments) (f ast)
+    accept f (Assignment type' name ast) = Assignment type' name $ f ast
+
+
+    -- postAccept f (Node type' (Call name args)) = f $ Node type' $ Call name $ map (postAccept f) args
+    -- postAccept f (Node type' (Id name)) = f $ Node type' $ Id name
+    -- postAccept f (Imparitive assignments ast) = f $ Imparitive (map (postAccept f) assignments) (postAccept f ast)
+    -- postAccept f (Assignment type' name ast) = f $ Assignment type' name $ postAccept f ast
+
+    postAccept f (Node type' (Id name)) = f $ Node type' $ Id name
+    postAccept f ast = f $ accept (postAccept f) ast
+
+    preAccept f (Node type' (Id name)) = f $ Node type' $ Id name
+    preAccept f ast = accept (preAccept f) $ f ast
+
 -- instance Functor SyntaxTree where
 --     fmap f (Node type' (Call name args)) = f $ Node type' $ Call name $ map (fmap f) args
 --     fmap f (Assignment type' name ast) = f $ Assignment type' name $ fmap f ast

@@ -74,7 +74,7 @@ factor' = factor . wrapPureAST
 replaceSubTree' :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
 replaceSubTree' old new subTree = if subTree == old then new else subTree
 replaceSubTree :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
-replaceSubTree old new = accept (replaceSubTree' old new) 
+replaceSubTree old new = preAccept (replaceSubTree' old new) 
 
 factor'' = replaceSubTree
 
@@ -86,16 +86,17 @@ maxIndex xs = head $ filter ((== maximum xs) . (xs !!)) [0..]
 -- This only really works well if the terms are sorted in accending order
 -- Yikes this is super slow
 deflateTerms terms syntaxTree = (deflatedSyntaxTree,deflated)
-    where deflatedSyntaxTree = syntaxTree -- foldr factorOutPair syntaxTree deflated
+    where deflatedSyntaxTree = foldr factorOutPair syntaxTree $ deflated
           identifierNames = map cacheSymbol [1..length terms]
-          identifiers = reverse $ map constructTermIdPair $ zip terms identifierNames
+          identifiers = map constructTermIdPair $ zip terms identifierNames
           factorOutPair (term,iden) tree = if tree == term then tree else factor'' term iden tree
-          deflated = reverse $ flip map identifiers $ \i -> (foldr (\j -> factorOutPair j) (first i) (drop (mget $ List.elemIndex i identifiers) identifiers), second i)
-          -- flip zip (map second identifiers) $ map (\targetNode -> foldr factorOutPair (first targetNode) identifiers) $ identifiers
+          deflated = -- flip map identifiers $ \i -> (foldr (\j -> factorOutPair j) (first i) (drop (mget $ List.elemIndex i identifiers) identifiers), second i)
+                     flip zip (map second identifiers) $ map (\targetNode -> foldr factorOutPair (first targetNode) identifiers) $ identifiers
 
-optimize' ast = deflateTerms repetativeSubTrees ast
+findRepetativeSubTrees ast = sort $ subtreesToOptimize occurances
     where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
-          repetativeSubTrees = sort $ subtreesToOptimize occurances
+
+optimize' ast = deflateTerms (findRepetativeSubTrees ast) ast
 
 makeAssignment :: (SyntaxTree,SyntaxTree) -> SyntaxTree
 makeAssignment ((Node type' subtree), (Node _ (Id name))) = Assignment type' name (Node type' subtree)
