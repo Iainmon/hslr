@@ -52,6 +52,16 @@ perlin :: Function
 perlin (Node Vector2 x) = Node Float $ Call "perlin" [Node Vector3 x]
 perlin x = makeUndefinedError "perlin" x
 
+pow :: SyntaxTree -> SyntaxTree -> SyntaxTree
+pow (Node Float x) (Node Float y) = Node Float $ Call "pow" [(Node Float x), (Node Float y)]
+pow x y = makeUndefinedError "perlin" x
+
+clamp :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
+clamp (Node Float a) (Node Float b) (Node Float x) = Node Float $ Call "clamp" [(Node Float a), (Node Float b), (Node Float x)]
+clamp x y z = makeUndefinedError "clamp" (vector (x,y,z))
+
+(^) = pow
+
 data SwizzleAccessor = Accessor String Type
 
 instance GLiteral SwizzleAccessor where
