@@ -21,13 +21,6 @@ root (Node Float x) = Node Float $ Call "sqrt" [Node Float x]
 root x = makeUndefinedError "root" x
 sqrt = root
 
--- makeUnaryFunction :: String -> Type -> Type -> SyntaxTree -> SyntaxTree
--- makeUnaryFunction name inType outType = f
---     where f (Node inType x) = Node outType $ Call name $ Node inType x
--- makeGenericUnaryFunction :: String -> SyntaxTree -> SyntaxTree
--- makeEndomorphicUnaryFunction name = f
---     where f (Node dType x) = Node dType $ Call name $ Node dType x
-
 makeFunctionApplication :: String -> Type -> Type -> Function
 -- makeFunctionApplication name inType outType (Node inType' (Call name' (Binary args))) = Node outType $ Call name $ Binary $ Node inType' $ Call name' $ Binary args
 -- makeFunctionApplication name inType outType (Node inType' (Call name' (Trinary args))) = Node outType $ Call name $ Trinary $ Node inType' $ Call name' $ Trinary args

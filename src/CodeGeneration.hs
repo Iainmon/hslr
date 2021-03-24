@@ -15,11 +15,6 @@ instance Show SyntaxTree where
     show (Imparitive assignments ast) = definitions ++ show ast where definitions = foldr (++) "" $ map (++";\n") $ map show assignments
     show (Assignment ty name a) = show ty ++ " " ++ name ++ " = " ++ show a
 
--- instance Show CallType where
---     show (Unary (a)) = parenthisize $ map show [a]
---     show (Binary (a,b)) = parenthisize $ map show [a,b]
---     show (Trinary (a,b,c)) = parenthisize $ map show [a,b,c]
-
 instance Show Type where
     show Int = "int"
     show Float = "float"

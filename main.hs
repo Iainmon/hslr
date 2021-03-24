@@ -10,6 +10,10 @@ import Control.Monad (when)
 import Prelude hiding (cos,sin,length,abs,(.),(^))
 import qualified Prelude (length)
 import Art
+import Control.Monad (when)
+import Prelude hiding (cos,sin,length,abs,(.),(^))
+import qualified Prelude (length)
+
 color = var Float "color"
 st = var Vector2 "uv"
 uv = st - vector (0.5,0.5)
@@ -62,7 +66,7 @@ program5 = mix white (colorf $ 10 * (perlin $ (uv * 8) + time) + time * 2) $ cla
           uv' = uv * 3 -- (uv + 0.2 *(perlin (uv * 2 + time))) * 3
 
 main = do
-    let newContents = generateProgram  $ optimize $ flattenCommutitiveOperations program5
+    let newContents = generateProgram  $ optimize $ flattenAssociativeOperations program2
     when (Prelude.length newContents > 0) $
         writeFile "out.frag" newContents
 m = main

@@ -1,4 +1,4 @@
-{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE ExtendedDefaultRules,TypeFamilies #-}
 
 module Art where
 
@@ -11,8 +11,23 @@ import Control.Monad (when)
 import Prelude hiding (cos,sin,length,abs,(.),(^))
 import qualified Prelude (length)
 
-
 data Layer = Color SyntaxTree | Combination Layer Layer SyntaxTree
+
+-- class Graph g where
+--     type Vertex g
+--     empty   :: g
+--     vertex  :: Vertex g -> g
+--     overlay :: g -> g -> g
+--     connect :: g -> g -> g
+
+-- instance Num Layer where
+
+-- instance Graph Layer where
+--     type Vertex Layer = SyntaxTree
+--     empty = Color $ vector (1,1,1)
+--     overlay a b = Combination a b 0.5
+--     connect (Combination a1 b1 l1) (Combination a2 b2 l2) = Combination (a1 + a2) (b1 + b2) $ clamp 0 1 $ l1 + l2
+--     connect a b = overlay a b
 
 color (a,b,c) = Color $ vector (a,b,c)
 

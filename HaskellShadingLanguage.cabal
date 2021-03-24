@@ -38,6 +38,7 @@ executable HaskellShadingLanguage
         base ^>=4.14.1.0
         , sort ^>=1.0.0.0
         , containers
+        -- , algebraic-graphs
     hs-source-dirs:
         .
         , src

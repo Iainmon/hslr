@@ -7,7 +7,7 @@ import Language
 import CodeGeneration
 
 compile :: SyntaxTree -> String
-compile (Imparitive instructions ast) = (foldl (++) "" $ map (++";\n") $ map show instructions) ++ compile ast
+compile (Imparitive instructions ast) = (foldr (++) "" $ map (++";\n") $ map show instructions) ++ compile ast
 compile ast = "\ncolor = " ++ show ast ++ ";\n"
 
 generateProgram :: SyntaxTree -> String
