@@ -13,6 +13,8 @@ data Type = Void | Int | Float | Bool | Vector2 | Vector3 | Vector4 deriving (Eq
 
 -- data CallType = Unary (SyntaxTree) | Binary (SyntaxTree,SyntaxTree) | Trinary (SyntaxTree,SyntaxTree,SyntaxTree) deriving (Eq, Ord)
 data AST = Call String [SyntaxTree] | Id String deriving (Eq,Ord)
+-- data TypeableAST t = Call String [SyntaxTree] | Id String deriving (Eq,Ord)
+-- type AST = TypeableAST Type
 
 -- Same thing
 type Routine = SyntaxTree -> SyntaxTree
@@ -24,6 +26,9 @@ data SyntaxTree =
      Node Type AST
     | Imparitive [SyntaxTree] SyntaxTree
     | Assignment Type String SyntaxTree deriving (Eq)
+
+-- data TypeableSyntaxTree t = Node t (TypeableAST t) | Imparitive [TypeableSyntaxTree t] (TypeableSyntaxTree t) | Assignment t String (TypeableSyntaxTree t) deriving (Eq)
+-- type SyntaxTree = TypeableSyntaxTree Type
 
 class Magnitude a where
     magnitude :: a -> Int
@@ -70,3 +75,15 @@ instance Accept SyntaxTree where
 
     preAccept f (Node type' (Id name)) = f $ Node type' $ Id name
     preAccept f ast = accept (preAccept f) $ f ast
+
+-- data SynTree a = SynTree SyntaxTree
+-- instance Foldable SynTree where
+--     foldr f z (SynTree (Node type' (Id name))) = (Node type' (Id name)) `f` z
+--     foldr f z (SynTree (Node type' (Call name args))) = (Node type' (Call name args)) `f` (List.foldr (foldr f z) z $ map SynTree args)
+
+-- instance Functor TypeableSyntaxTree where
+--     fmap f (Node type' (Call name args)) = Node type' $ Call name $ map f args
+--     fmap f (Node type' (Id name)) = f $ Node type' $ Id name
+--     fmap f (Imparitive assignments ast) = Imparitive (map (f) assignments) (f ast)
+--     fmap f (Assignment type' name ast) = Assignment type' name $ f ast
+

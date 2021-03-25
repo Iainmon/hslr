@@ -22,7 +22,6 @@ add key hashmap = M.insert key (incVal key hashmap) hashmap
 countSubTrees :: SyntaxTree -> M.Map SyntaxTree Int -> M.Map SyntaxTree Int
 countSubTrees (Imparitive _ ast) hashmap = countSubTrees ast hashmap
 countSubTrees (Node type' (Call name args)) hashmap = foldl (\hm -> \arg -> countSubTrees arg hm) start args where start = flip add hashmap (Node type' (Call name args))
-countSubTrees (Node type' (Id name)) hashmap        = hashmap
 countSubTrees ast hashmap                           = if not $ M.member ast hashmap then M.insert ast 1 hashmap else hashmap
 
 countSubTrees' ast = countSubTrees ast (M.empty :: M.Map SyntaxTree Int)

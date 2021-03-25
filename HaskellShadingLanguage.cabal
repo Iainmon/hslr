@@ -35,8 +35,8 @@ executable HaskellShadingLanguage
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:
-        base ^>=4.14.1.0
-        , sort ^>=1.0.0.0
+        base
+        , sort
         , containers
         -- , algebraic-graphs
     hs-source-dirs:
