@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances, TypeFamilies, TupleSections #-}
 
 module Optimizer where
 import SyntaxTree
@@ -74,8 +74,9 @@ deflateTerms terms syntaxTree = (deflatedSyntaxTree,deflated)
           deflated = -- flip map identifiers $ \i -> (foldr (\j -> factorOutPair j) (first i) (drop (mget $ List.elemIndex i identifiers) identifiers), second i)
                      flip zip (map second identifiers) $ map (\targetNode -> foldr factorOutPair (first targetNode) identifiers) $ identifiers
 
-findRepetativeSubTrees ast = sort $ subtreesToOptimize occurances
-    where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
+-- findRepetativeSubTrees ast = sort $ subtreesToOptimize occurances
+--     where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
+findRepetativeSubTrees = sort . repetativeSubTrees
 
 optimize' ast = deflateTerms (findRepetativeSubTrees ast) ast
 
@@ -116,3 +117,21 @@ flattenAssociativeOperations (Node type' (Call name args)) =
 flattenAssociativeOperations (Node type' (Id name)) = Node type' $ Id name
 flattenAssociativeOperations (Assignment type' name ast) = Assignment type' name $ flattenAssociativeOperations ast
 flattenAssociativeOperations (Imparitive assignments ast) = Imparitive (map flattenAssociativeOperations assignments) (flattenAssociativeOperations ast)
+
+
+
+
+-- accept :: (a -> a) -> a -> a
+
+
+spread' :: SyntaxTree -> [SyntaxTree]
+spread' (Node type' (Id name)) = [Node type' (Id name)]
+spread' (Node type' (Call name args)) = (Node type' (Call name args)) : (foldr (++) [] $ map spread args)
+spread = filter ((<) 1 . magnitude) . spread'
+
+countOccurances :: (Ord a) => [a] -> [(a,Int)]
+countOccurances = M.toList . M.fromListWith (+) . map (, 1)
+identifyUniqueSubTrees = map first . countOccurances . spread
+
+repetativeSubTrees :: SyntaxTree -> [SyntaxTree]
+repetativeSubTrees = map first . filter ((<) 1 . second) . countOccurances . spread

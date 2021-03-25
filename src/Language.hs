@@ -8,6 +8,7 @@ module Language where
 
 import SyntaxTree
 import CodeGeneration
+import RoseTree
 
 class GLiteral t where
     represent :: t -> String
@@ -85,3 +86,15 @@ iden s = Id s
 
 lit :: (GLiteral a) => a -> SyntaxTree
 lit = syntaxNode
+
+
+data Identifier = Identifier Type String deriving (Eq,Ord,Show)
+
+instance Magnitude Identifier where
+    magnitude (Identifier _ _) = 1
+
+toRoseTree :: SyntaxTree -> RoseTree Identifier
+toRoseTree (Node type' (Call name args)) = Branch (Identifier type' name) (map toRoseTree args)
+toRoseTree (Node type' (Id name)) = Leaf $ Identifier type' name
+toRoseTree (Imparitive assignments ast) = toRoseTree ast
+toRoseTree (Assignment type' name ast) = toRoseTree ast

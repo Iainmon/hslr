@@ -66,7 +66,7 @@ program5 = mix white (colorf $ 10 * (perlin $ (uv * 8) + time) + time * 2) $ cla
           uv' = uv * 3 -- (uv + 0.2 *(perlin (uv * 2 + time))) * 3
 
 main = do
-    let newContents = generateProgram $ optimize $ flattenAssociativeOperations program2
+    let newContents = generateProgram $ flattenAssociativeOperations $ optimize program2
     when (Prelude.length newContents > 0) $
         writeFile "out.frag" newContents
 m = main

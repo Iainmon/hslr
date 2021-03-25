@@ -76,6 +76,8 @@ instance Accept SyntaxTree where
     preAccept f (Node type' (Id name)) = f $ Node type' $ Id name
     preAccept f ast = accept (preAccept f) $ f ast
 
+
+
 -- data SynTree a = SynTree SyntaxTree
 -- instance Foldable SynTree where
 --     foldr f z (SynTree (Node type' (Id name))) = (Node type' (Id name)) `f` z
