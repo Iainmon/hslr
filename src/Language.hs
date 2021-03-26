@@ -98,3 +98,8 @@ toRoseTree (Node type' (Call name args)) = Branch (Identifier type' name) (map t
 toRoseTree (Node type' (Id name)) = Leaf $ Identifier type' name
 toRoseTree (Imparitive assignments ast) = toRoseTree ast
 toRoseTree (Assignment type' name ast) = toRoseTree ast
+
+
+fromRoseTree :: RoseTree Identifier -> SyntaxTree
+fromRoseTree (Leaf (Identifier type' name)) = Node type' (Id name)
+fromRoseTree (Branch (Identifier type' name) subtrees) = Node type' $ Call name $ map fromRoseTree subtrees

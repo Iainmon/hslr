@@ -12,7 +12,7 @@ import qualified Prelude (length)
 import Art
 import Control.Monad (when)
 import Prelude hiding (cos,sin,length,abs,(.),(^))
-import qualified Prelude (length)
+import qualified Prelude (length,(.))
 
 color = var Float "color"
 st = var Vector2 "uv"
@@ -63,7 +63,21 @@ program4 = compileLayers layers
 
 program5 = mix white (colorf $ 10 * (perlin $ (uv * 8) + time) + time * 2) $ clamp 0.0 1.0 z
     where z = 10000 * (dfield (uv'.x) (uv'.y)) -- bp (0.0001 * (abs $ sin time)) 0.0 $ abs $ dfield (uv'.x) (uv'.y)
-          uv' = uv * 3 -- (uv + 0.2 *(perlin (uv * 2 + time))) * 3
+          uv' = (uv + 0.2 *(perlin (uv * 2 + time))) * 3
+
+monsterProgram = vector (z,z,z)
+    where a = length $ dfield (uv.x + uv.y) 5
+          b = a * bp (perlin (uv + (dfield ((length a) * 10 + length uv) $ length uv))) 10 10
+          z = length b -- (b + b + uv + 10 + a + b) -- b + 1
+
+genhardProg term 0 = term * 10 - (term + term * 2) - length (uv * 2 * term - uv * uv)
+genhardProg term degree = genhardProg term (degree-1) / genhardProg term (degree-1)
+
+hardTerm = vector (10,20,30)
+hardProgs = map (genhardProg hardTerm) [1..100]
+
+printHardProgs = mapM_ putStrLn $ map show $ map (flattenAssociativeOperations Prelude.. optimize) hardProgs 
+
 
 main = do
     let newContents = generateProgram $ flattenAssociativeOperations $ optimize program2

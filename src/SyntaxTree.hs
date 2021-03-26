@@ -12,7 +12,7 @@ import Data.Sort
 data Type = Void | Int | Float | Bool | Vector2 | Vector3 | Vector4 deriving (Eq,Ord)
 
 -- data CallType = Unary (SyntaxTree) | Binary (SyntaxTree,SyntaxTree) | Trinary (SyntaxTree,SyntaxTree,SyntaxTree) deriving (Eq, Ord)
-data AST = Call String [SyntaxTree] | Id String deriving (Eq,Ord)
+data AST = Call String [SyntaxTree] | Id String deriving (Ord)
 -- data TypeableAST t = Call String [SyntaxTree] | Id String deriving (Eq,Ord)
 -- type AST = TypeableAST Type
 
@@ -58,6 +58,16 @@ instance Magnitude SyntaxTree where
 
 instance Ord SyntaxTree where
     compare a b = compare (magnitude a) (magnitude b)
+
+pairEquality :: (Eq a) => (a,a) -> Bool
+pairEquality (a,b) = a == b
+
+
+instance Eq AST where
+    (==) (Call name args) (Call name' args') = (name == name') `and` (foldr and True $ map pairEquality $ zip args args')
+        where and = (&&)
+    (==) (Id name) (Id name') = name == name'
+    (==) _ _ = False
 
 class Accept a where
     preAccept :: (a -> a) -> a -> a

@@ -8,7 +8,7 @@ void program(inout vec3 color) {
 	float _cache_0x5 = (_cache_0x3 + 0.5);
 	float _cache_0x6 = (_cache_0x4 . y);
 	float _cache_0x7 = perlin((_cache_0x4 + u_time));
-	vec3 _cache_0x8 = (10.0 + _cache_0x4 + u_time);
+	vec2 _cache_0x8 = (10.0 + _cache_0x4 + u_time);
 	float _cache_0x9 = perlin(_cache_0x8);
 	float _cache_0xa = (0.2 * _cache_0x9);
 	float _cache_0xb = (_cache_0x6 * _cache_0x6);

@@ -3,7 +3,7 @@ import SyntaxTree
 import Language
 import Prelude hiding (length, (.))
 
-makeUndefinedError funcName ast = error $ "Error! No implementation of " ++ funcName ++ " accepts " ++ show ast
+makeUndefinedError funcName ast = error $ "Error! No implementation of " ++ funcName ++ " accepts \'" ++ show (typeof ast) ++ "\'.\n The incorrect type is from " ++ show ast
 
 cosine :: Function
 cosine (Node Float x) = Node Float $ Call "cos" [Node Float x]
@@ -42,7 +42,7 @@ abs :: Function
 abs (Node type' x) = makeFunctionApplication "abs" type' type' $ Node type' x
 
 perlin :: Function
-perlin (Node Vector2 x) = Node Float $ Call "perlin" [Node Vector3 x]
+perlin (Node Vector2 x) = Node Float $ Call "perlin" [Node Vector2 x]
 perlin x = makeUndefinedError "perlin" x
 
 pow :: SyntaxTree -> SyntaxTree -> SyntaxTree
