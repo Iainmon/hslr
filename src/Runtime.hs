@@ -1,7 +1,7 @@
 module Runtime where
 import SyntaxTree
 import Language
-import Prelude hiding (length, (.))
+import Prelude hiding (length, (.),or,and)
 
 makeUndefinedError funcName ast = error $ "Error! No implementation of " ++ funcName ++ " accepts \'" ++ show (typeof ast) ++ "\'.\n The incorrect type is from " ++ show ast
 
@@ -61,6 +61,26 @@ instance GLiteral SwizzleAccessor where
     represent (Accessor name _) = name
     syntaxNode (Accessor name type') = Node type' $ Id name 
 
+if' x _ a _ b = Node (typeof a) $ Call "cond" [x, a, b]
+then' = undefined
+else' = undefined
+
+and a b = Node (typeof a) $ Call "logand" [a,b]
+or a b = Node (typeof a) $ Call "logor" [a,b]
+band a b = Node (typeof a) $ Call "bitand" [a,b]
+bor a b = Node (typeof a) $ Call "bitor" [a,b]
+
+(&&) = and
+(||) = or
+(&) = band
+(\|) = bor
+
+geq a b = Node Bool $ Call "geq" [a,b]
+leq a b = Node Bool $ Call "leq" [a,b]
+eq a b = Node Bool $ Call "eq" [a,b]
+
+int x = Node Int $ Call "int" [x]
+floor x = Node (typeof x) $ Call "floor" [x]
 
 swizzle :: SyntaxTree -> SwizzleAccessor -> SyntaxTree
 swizzle lhs (Accessor name type') = Node type' $ Call "swizzle" [lhs, syntaxNode (Accessor name type')]

@@ -29,6 +29,15 @@ isInfix (Call "add" _) = Just ['+']
 isInfix (Call "mul" _) = Just ['*']
 isInfix (Call "sub" _) = Just ['-']
 isInfix (Call "div" _) = Just ['/']
+isInfix (Call "bitand" _) = Just ['&']
+isInfix (Call "logand" _) = Just "&&"
+isInfix (Call "bitor" _) = Just ['|']
+isInfix (Call "logor" _) = Just "||"
+isInfix (Call "leq" _) = Just "<="
+isInfix (Call "geq" _) = Just ">="
+isInfix (Call "eq" _) = Just "=="
+isInfix (Call "gt" _) = Just ['>']
+isInfix (Call "lt" _) = Just ['<']
 isInfix (Call "swizzle" _) = Just ['.']
 isInfix _ = Nothing
 
@@ -41,6 +50,8 @@ joinInfixList op (a:as) = foldl (\n -> \m -> n ++ " " ++ op ++ " " ++ m) a as
 
 instance Show AST where
     show (Id a) = a
+    show (Call "not" [a]) = parensWrap $ "!" ++ show a
+    show (Call "cond" [condition, result, alternative]) = parensWrap $ show condition ++ " ? " ++ show result ++ " : " ++ show alternative
     show (Call name args) = shownCall where
         shownCall = case isInfix (Call name args) of
                 Just operator -> showBinaryInfix operator args
