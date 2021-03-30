@@ -7,7 +7,10 @@ import Language
 import qualified Data.Map as M
 import Text.Printf
 import qualified Data.List as List
+import Data.List (foldl')
 import Data.Sort
+import RoseTree
+import Spreadable
 
 mget :: Maybe Int -> Int
 mget (Just a) = a
@@ -21,7 +24,7 @@ add key hashmap = M.insert key (incVal key hashmap) hashmap
 
 countSubTrees :: SyntaxTree -> M.Map SyntaxTree Int -> M.Map SyntaxTree Int
 countSubTrees (Imparitive _ ast) hashmap = countSubTrees ast hashmap
-countSubTrees (Node type' (Call name args)) hashmap = foldl (\hm -> \arg -> countSubTrees arg hm) start args where start = flip add hashmap (Node type' (Call name args))
+countSubTrees (Node type' (Call name args)) hashmap = foldl' (\hm -> \arg -> countSubTrees arg hm) start args where start = flip add hashmap (Node type' (Call name args))
 countSubTrees ast hashmap                           = if not $ M.member ast hashmap then M.insert ast 1 hashmap else hashmap
 
 countSubTrees' ast = countSubTrees ast (M.empty :: M.Map SyntaxTree Int)
@@ -72,7 +75,7 @@ deflateTerms terms syntaxTree = (deflatedSyntaxTree,deflated)
           identifiers = map constructTermIdPair $ zip terms identifierNames
           factorOutPair (term,iden) tree = if tree == term then tree else factor'' term iden tree
           deflated = -- flip map identifiers $ \i -> (foldr (\j -> factorOutPair j) (first i) (drop (mget $ List.elemIndex i identifiers) identifiers), second i)
-                     flip zip (map second identifiers) $ map (\targetNode -> foldr factorOutPair (first targetNode) identifiers) $ identifiers
+                     flip zip (map second identifiers) $ map (\targetNode -> foldl' (flip factorOutPair) (first targetNode) (reverse identifiers)) $ identifiers
 
 -- findRepetativeSubTrees ast = sort $ subtreesToOptimize occurances
 --     where occurances = M.toList $ invertHashMap $ invertHashMap $ countSubTrees' ast
@@ -109,7 +112,7 @@ callerArguments _ = []
 flattenAssociativeOperations :: SyntaxTree -> SyntaxTree
 flattenAssociativeOperations (Node type' (Call name args)) =
     if elem name commOps
-    then Node type' $ Call name $ (++) regexNodes $ foldl (++) [] $ map callerArguments redexNodes
+    then Node type' $ Call name $ (++) regexNodes $ foldl' (++) [] $ map callerArguments redexNodes
     else Node type' $ Call name $ map flattenAssociativeOperations args
         where flattenedChildren = map flattenAssociativeOperations args
               redexNodes = filter ((Just name ==) . (fmap nameof) . unwrapTypedNode) flattenedChildren
@@ -124,14 +127,48 @@ flattenAssociativeOperations (Imparitive assignments ast) = Imparitive (map flat
 -- accept :: (a -> a) -> a -> a
 
 
-spread' :: SyntaxTree -> [SyntaxTree]
-spread' (Node type' (Id name)) = [Node type' (Id name)]
-spread' (Node type' (Call name args)) = (Node type' (Call name args)) : (foldr (++) [] $ map spread args)
-spread = filter ((<) 1 . magnitude) . spread'
+
+spread' = filter ((<) 1 . magnitude) . spread
 
 countOccurances :: (Ord a) => [a] -> [(a,Int)]
 countOccurances = M.toList . M.fromListWith (+) . map (, 1)
-identifyUniqueSubTrees = map first . countOccurances . spread
+identifyUniqueSubTrees = map first . countOccurances . spread'
 
 repetativeSubTrees :: SyntaxTree -> [SyntaxTree]
-repetativeSubTrees = map first . filter ((<) 1 . second) . countOccurances . spread
+repetativeSubTrees = map first . filter ((<) 1 . second) . countOccurances . spread'
+
+
+
+
+
+
+
+
+
+
+
+
+-- god help me i am rewriting the optimizer again
+
+type HashLabel = String
+
+-- This is slow
+hashSubTree :: RoseTree Identifier -> HashLabel
+hashSubTree = show . fromRoseTree
+
+labeledTree :: RoseTree Identifier -> RoseTree HashLabel
+labeledTree (Branch a as) = Branch (hashSubTree (Branch a as)) hashedChildren
+    where hashedChildren = map labeledTree as
+labeledTree (Leaf a) = Leaf $ hashSubTree $ Leaf a
+
+instance Spreadable (RoseTree a) where
+    spread (Leaf a) = [Leaf a]
+    spread (Branch a as) = (Branch a as) : (foldl' (++) [] $ map spread as)
+
+instance Spreadable [a] where
+    spread [] = []
+    spread xs = xs : (spread . tail $ xs)
+
+instance Spreadable SyntaxTree where 
+    spread (Node type' (Id name)) = [Node type' (Id name)]
+    spread (Node type' (Call name args)) = (Node type' (Call name args)) : (foldl' (++) [] $ map spread args)

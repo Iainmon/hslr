@@ -2,6 +2,7 @@
 
 module CodeGeneration where
 import SyntaxTree
+import Data.List (foldl')
 
 parenthisize' :: [String] -> String
 parenthisize' (a:[]) = a
@@ -12,7 +13,7 @@ parenthisize as = "(" ++ parenthisize' as ++ ")"
 
 instance Show SyntaxTree where
     show (Node _ ast) = show ast
-    show (Imparitive assignments ast) = definitions ++ show ast where definitions = foldr (++) "" $ map (++";\n") $ map show assignments
+    show (Imparitive assignments ast) = definitions ++ show ast where definitions = foldl' (++) "" $ map (++";\n") $ map show assignments
     show (Assignment ty name a) = show ty ++ " " ++ name ++ " = " ++ show a
 
 instance Show Type where
@@ -46,7 +47,7 @@ parensWrap a  = "(" ++ a ++ ")"
 
 joinInfixList :: String -> [String] -> String
 joinInfixList op [] = ""
-joinInfixList op (a:as) = foldl (\n -> \m -> n ++ " " ++ op ++ " " ++ m) a as
+joinInfixList op (a:as) = foldl' (\n -> \m -> n ++ " " ++ op ++ " " ++ m) a as
 
 instance Show AST where
     show (Id a) = a

@@ -1,9 +1,10 @@
+{-# LANGUAGE DeriveTraversable #-}
 
 module RoseTree where 
 import Data.List as List
 
 -- data TypedSyntaxNode t = Node t String deriving (Eq,Show)
-data RoseTree a = Leaf a | Branch a [RoseTree a] deriving (Eq,Show)
+data RoseTree a = Leaf a | Branch a [RoseTree a] deriving (Eq,Show,Traversable)
 
 instance Functor RoseTree where
     fmap f (Leaf a) = Leaf (f a)
@@ -11,6 +12,6 @@ instance Functor RoseTree where
 
 instance Foldable RoseTree where
     foldr f z (Leaf a) = a `f` z
-    foldr f z (Branch a as) = a `f` (List.foldl (foldr f) z as)
+    foldr f z (Branch a as) = a `f` (List.foldl' (foldr f) z as)
 
 -- rt = Branch 1 [Leaf 2, Branch 3 [Leaf 4, Leaf 5]]

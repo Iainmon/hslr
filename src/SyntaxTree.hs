@@ -30,6 +30,8 @@ data SyntaxTree =
 -- data TypeableSyntaxTree t = Node t (TypeableAST t) | Imparitive [TypeableSyntaxTree t] (TypeableSyntaxTree t) | Assignment t String (TypeableSyntaxTree t) deriving (Eq)
 -- type SyntaxTree = TypeableSyntaxTree Type
 
+data SyntaxTree' = SyntaxNode { expType :: Type, identifier :: String, args :: Maybe [SyntaxTree']}
+
 class Magnitude a where
     magnitude :: a -> Int
 

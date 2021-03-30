@@ -74,7 +74,7 @@ genhardProg term 0 = term * 10 - (term + term * 2) - length (uv * 2 * term - uv 
 genhardProg term degree = genhardProg term (degree-1) / genhardProg term (degree-1)
 
 hardTerm = vector (10,20,30)
-hardProgs = map (genhardProg hardTerm) [1..100]
+hardProgs = map (genhardProg hardTerm) [1..10]
 
 printHardProgs = mapM_ putStrLn $ map show $ map (flattenAssociativeOperations Prelude.. optimize) hardProgs 
 

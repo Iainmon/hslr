@@ -5,13 +5,14 @@ import SyntaxTree
 import Optimizer
 import Language
 import CodeGeneration
+import Data.List (foldl')
 
 compile :: SyntaxTree -> String
-compile (Imparitive instructions ast) = (foldr (++) "" $ map (++";\n") $ map show instructions) ++ compile ast
+compile (Imparitive instructions ast) = (foldl' (++) "" $ map (++";\n") $ map show instructions) ++ compile ast
 compile ast = "\ncolor = " ++ show ast ++ ";\n"
 
 generateProgram :: SyntaxTree -> String
-generateProgram ast = foldr (++) "" $ map (++"\n") sourceParts where
+generateProgram ast = foldl' (++) "" $ map (++"\n") sourceParts where
     sourceParts = [
         "#include \"lib/runtime.glsl\""
         ,"#include \"lib/noise.glsl\""
