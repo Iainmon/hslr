@@ -8,6 +8,7 @@ import qualified Data.Bifunctor as BF
 import Text.Printf
 import qualified Data.List as List
 import Data.Sort
+import RoseTree
 
 data Type = Void | Int | Float | Bool | Vector2 | Vector3 | Vector4 deriving (Eq,Ord)
 
@@ -31,9 +32,6 @@ data SyntaxTree =
 -- type SyntaxTree = TypeableSyntaxTree Type
 
 data SyntaxTree' = SyntaxNode { expType :: Type, identifier :: String, args :: Maybe [SyntaxTree']}
-
-class Magnitude a where
-    magnitude :: a -> Int
 
 
 tupleMap f = BF.bimap f f

@@ -13,6 +13,7 @@ import Art
 import Control.Monad (when)
 import Prelude hiding (cos,sin,length,abs,(.),(^))
 import qualified Prelude (length,(.))
+import RoseTree hiding (root)
 
 color = var Float "color"
 st = var Vector2 "uv"

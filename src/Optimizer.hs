@@ -10,7 +10,6 @@ import qualified Data.List as List
 import Data.List (foldl')
 import Data.Sort
 import RoseTree
-import Spreadable
 
 mget :: Maybe Int -> Int
 mget (Just a) = a
@@ -129,26 +128,29 @@ flattenAssociativeOperations (Imparitive assignments ast) = Imparitive (map flat
 
 
 spread' = filter ((<) 1 . magnitude) . spread
-
-countOccurances :: (Ord a) => [a] -> [(a,Int)]
-countOccurances = M.toList . M.fromListWith (+) . map (, 1)
 identifyUniqueSubTrees = map first . countOccurances . spread'
-
 repetativeSubTrees :: SyntaxTree -> [SyntaxTree]
 repetativeSubTrees = map first . filter ((<) 1 . second) . countOccurances . spread'
 
 
+countOccurances :: (Ord a) => [a] -> [(a,Int)]
+countOccurances = M.toList . M.fromListWith (+) . map (, 1)
+
+duplicateOccurances = map first . filter ((<) 1 . second)
+uniqueOccurances = map first . filter ((==) 1 . second)
 
 
+uniqueFeatures :: (Ord a, Spreadable a) => a -> [a]
+uniqueFeatures = uniqueOccurances . countOccurances . spread
 
+duplicateFeatures :: (Ord a, Spreadable a) => a -> [a]
+duplicateFeatures = duplicateOccurances . countOccurances . spread
 
+duplicateRoseTrees :: (Ord a) => RoseTree a -> [RoseTree a]
+duplicateRoseTrees = duplicateOccurances . countOccurances . filter ((<) 1 . numKinder) . spread
+uniqueRoseTrees :: (Ord a) => RoseTree a -> [RoseTree a]
+uniqueRoseTrees = uniqueOccurances . countOccurances . filter ((<) 1 . numKinder) . spread
 
-
-
-
-
-
--- god help me i am rewriting the optimizer again
 
 type HashLabel = String
 
@@ -161,13 +163,45 @@ labeledTree (Branch a as) = Branch (hashSubTree (Branch a as)) hashedChildren
     where hashedChildren = map labeledTree as
 labeledTree (Leaf a) = Leaf $ hashSubTree $ Leaf a
 
-instance Spreadable (RoseTree a) where
-    spread (Leaf a) = [Leaf a]
-    spread (Branch a as) = (Branch a as) : (foldl' (++) [] $ map spread as)
 
-instance Spreadable [a] where
-    spread [] = []
-    spread xs = xs : (spread . tail $ xs)
+-- rtOptimize rt = fmap (\srt -> if M.member srt hm then (Identifier Void "cached") else srt)
+--     where hashTree = labeledTree rt
+--           pairs = zip (spread hashTree) (spread rt)
+--           hm = M.fromList pairs
+--           dups = duplicateRoseTrees hashTree
+
+rtOptimize rt = fmap (flip getHm hm) hashTree
+    where hashTree = labeledTree rt
+          pairs = zip (map root $ spread hashTree) (map root $ spread rt)
+          dupPairs = zip (map root $ duplicateRoseTrees hashTree) (duplicateRoseTrees rt)
+          cachedDups = map (\(k,v) -> (k,Identifier Void "cached")) dupPairs
+          hm' = M.fromList pairs
+          hm = flip M.union hm' $ M.fromList cachedDups
+          getHm = M.lookup
+        --   getHm key hm = case M.lookup key hm of 
+        --                   Just a -> a
+        --                   Nothing -> Identifier Void "somethingfailed"
+
+rtOptimize' = pruneNothingRoseBuds . rtOptimize
+
+fromRoseTree' :: RoseTree Identifier -> Maybe SyntaxTree
+fromRoseTree' = Just . fromRoseTree
+
+synTreeOpt' synTree = (rtOptimize' . toRoseTree $ synTree) >>= fromRoseTree'
+
+onlyJusts :: [Maybe a] -> [a]
+onlyJusts []  = []
+onlyJusts (Nothing:as)  = onlyJusts as
+onlyJusts ((Just a):as) = a : onlyJusts as
+
+removeLea
+
+pruneNothingRoseBuds :: RoseTree (Maybe a) -> Maybe (RoseTree a)
+pruneNothingRoseBuds (Branch Nothing _) = Nothing
+pruneNothingRoseBuds (Leaf Nothing) = Nothing
+pruneNothingRoseBuds (Branch (Just a) as) = Just $ Branch a $ onlyJusts $ map pruneNothingRoseBuds as
+pruneNothingRoseBuds (Leaf (Just a)) = Just $ Leaf a
+
 
 instance Spreadable SyntaxTree where 
     spread (Node type' (Id name)) = [Node type' (Id name)]
