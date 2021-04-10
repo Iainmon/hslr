@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, TypeFamilies, TupleSections #-}
+{-# LANGUAGE TupleSections #-}
 
 module Optimizer where
 import SyntaxTree
@@ -194,7 +194,6 @@ onlyJusts []  = []
 onlyJusts (Nothing:as)  = onlyJusts as
 onlyJusts ((Just a):as) = a : onlyJusts as
 
-removeLea
 
 pruneNothingRoseBuds :: RoseTree (Maybe a) -> Maybe (RoseTree a)
 pruneNothingRoseBuds (Branch Nothing _) = Nothing

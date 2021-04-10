@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveTraversable, DefaultSignatures, FlexibleInstances,FlexibleContexts #-}
+{-# LANGUAGE DeriveTraversable, DefaultSignatures #-}
 
 module RoseTree where 
 import Data.List as List

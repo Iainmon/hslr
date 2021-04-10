@@ -2,7 +2,7 @@
     Language Representation
 --}
 
-{-# LANGUAGE FlexibleInstances, TypeFamilies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Language where
 
@@ -26,10 +26,6 @@ instance GLiteral Float where
 instance GLiteral Double where
     represent = show
     syntaxNode n = Node Float $ Id $ represent n
-
-instance GLiteral (String,Type) where
-    represent (name, _) = name
-    syntaxNode (name, type') = Node type' $ Id name
 
 instance GLiteral SyntaxTree where
     represent = show

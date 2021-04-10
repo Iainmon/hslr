@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances, TypeFamilies #-}
-
 module Compiler where
 import SyntaxTree
 import Optimizer

@@ -6,14 +6,12 @@ import Language
 import Compiler
 import Optimizer
 import Runtime
-import Control.Monad (when)
-import Prelude hiding (cos,sin,length,abs,(.),(^))
-import qualified Prelude (length)
 import Art
 import Control.Monad (when)
 import Prelude hiding (cos,sin,length,abs,(.),(^))
 import qualified Prelude (length,(.))
 import RoseTree hiding (root)
+import Run
 
 color = var Float "color"
 st = var Vector2 "uv"
@@ -82,6 +80,11 @@ printHardProgs = mapM_ putStrLn $ map show $ map (flattenAssociativeOperations P
 
 main = do
     let newContents = generateProgram $ flattenAssociativeOperations $ optimize program2
-    when (Prelude.length newContents > 0) $
-        writeFile "out.frag" newContents
+    let shaderFile = "out.frag"
+    save newContents shaderFile
+    run $ Params { width = 600, height = 600, fileName = shaderFile}
+-- main = do
+--     let newContents = generateProgram $ flattenAssociativeOperations $ optimize program2
+--     when (Prelude.length newContents > 0) $
+--         writeFile "out.frag" newContents
 m = main

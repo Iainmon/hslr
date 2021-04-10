@@ -38,6 +38,8 @@ executable HaskellShadingLanguage
         base
         , sort
         , containers
+        , generic-deriving
+        , process
         -- , algebraic-graphs
     hs-source-dirs:
         .

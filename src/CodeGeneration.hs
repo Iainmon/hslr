@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances, TypeFamilies #-}
-
 module CodeGeneration where
 import SyntaxTree
 import Data.List (foldl')

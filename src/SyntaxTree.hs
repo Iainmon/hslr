@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances, TypeFamilies #-}
-
 
 module SyntaxTree where
 -- (lit, var, SyntaxTree, compile, generateProgram, wrap, cosine, optimize, GLiteral,  Type(..))
@@ -31,7 +29,7 @@ data SyntaxTree =
 -- data TypeableSyntaxTree t = Node t (TypeableAST t) | Imparitive [TypeableSyntaxTree t] (TypeableSyntaxTree t) | Assignment t String (TypeableSyntaxTree t) deriving (Eq)
 -- type SyntaxTree = TypeableSyntaxTree Type
 
-data SyntaxTree' = SyntaxNode { expType :: Type, identifier :: String, args :: Maybe [SyntaxTree']}
+-- data SyntaxTree' = SyntaxNode { expType :: Type, identifier :: String, args :: Maybe [SyntaxTree']}
 
 
 tupleMap f = BF.bimap f f
