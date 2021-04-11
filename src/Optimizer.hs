@@ -1,6 +1,10 @@
 {-# LANGUAGE TupleSections #-}
 
-module Optimizer where
+module Optimizer (
+    optimize,
+    flattenAssociativeOperations,
+    fromRoseTree
+) where
 import SyntaxTree
 import CodeGeneration
 import Language
@@ -39,7 +43,7 @@ subtreesToOptimize :: [(SyntaxTree, Int)] -> [SyntaxTree]
 subtreesToOptimize ts = map first $ filter (\pair -> second pair > 1) ts
 
 cacheSymbol :: Int -> String
-cacheSymbol n = "_cache_" ++ hexShow n
+cacheSymbol n = "_" ++ hexShow n
 
 factor :: SyntaxTree -> (SyntaxTree,Int) -> SyntaxTree
 factor (Imparitive instructions ast) ((Node type' subtree),n) = Imparitive newInstructions $ factor ast (term,n)
@@ -190,10 +194,11 @@ fromRoseTree' = Just . fromRoseTree
 synTreeOpt' synTree = (rtOptimize' . toRoseTree $ synTree) >>= fromRoseTree'
 
 onlyJusts :: [Maybe a] -> [a]
-onlyJusts []  = []
-onlyJusts (Nothing:as)  = onlyJusts as
-onlyJusts ((Just a):as) = a : onlyJusts as
-
+-- onlyJusts []  = []
+-- onlyJusts (Nothing:as)  = onlyJusts as
+-- onlyJusts ((Just a):as) = a : onlyJusts as
+onlyJusts = map unJust . filter (not . null)
+    where unJust (Just a) = a -- Partial function but that's ok.
 
 pruneNothingRoseBuds :: RoseTree (Maybe a) -> Maybe (RoseTree a)
 pruneNothingRoseBuds (Branch Nothing _) = Nothing

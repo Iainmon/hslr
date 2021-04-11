@@ -16,6 +16,7 @@ instance Show RunParams where
 run params = do
     callCommand $ "glslViewer " ++ show params
 
+save :: String -> String -> IO ()
 save source fileName = do
     when (length source > 0) $
         writeFile fileName source
