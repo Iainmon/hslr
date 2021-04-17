@@ -2,13 +2,14 @@
     Language Representation
 --}
 
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies, PatternSynonyms #-}
 
 module Language where
 
 import SyntaxTree
 import CodeGeneration
 import RoseTree
+import Data.List
 
 class GLiteral t where
     represent :: t -> String
@@ -99,3 +100,42 @@ toRoseTree (Assignment type' name ast) = toRoseTree ast
 fromRoseTree :: RoseTree Identifier -> SyntaxTree
 fromRoseTree (Leaf (Identifier type' name)) = Node type' (Id name)
 fromRoseTree (Branch (Identifier type' name) subtrees) = Node type' $ Call name $ map fromRoseTree subtrees
+
+
+-- Patterns
+
+pattern Var type' name = Node type' (Id name)
+pattern App type' name args = Node type' (Call name args)
+-- pattern Vector type' vectorName components = App type' vectorName components
+pattern Vec2 x y = Node Vector2 (Call "vec2" [x,y])
+pattern Vec3 x y z = Node Vector3 (Call "vec3" [x,y, z])
+-- pattern Infix type' x y = Node type' (Call _ [x,y])
+
+newtype Typeset = Tex SyntaxTree
+
+instance Show Typeset where 
+    show (Tex tree) = "\\begin{gather*}" ++ texify tree ++ "\\end{gather*}"
+
+
+conchar :: String -> String
+conchar "_" = "\\_"
+conchar a = a
+
+scrub :: String -> String
+scrub = intercalate "" . map (conchar . flip (:) "")
+
+pleft = "\\left("
+pright = "\\right)"
+texify :: SyntaxTree -> String
+texify (Imparitive statements ast) = foldr (++) "" (map texify statements) ++ texify ast
+texify (Assignment type' name ast) = "\\text{Let $" ++ (texify $ Var type' name) ++ "$ = }" ++ texify ast ++ "\\\\ "
+texify (Var Vector2 name) = "\\mathbf{" ++ scrub name ++ "}"
+texify (Var Vector3 name) = "\\mathbf{" ++ scrub name ++ "}"
+texify (Var _ name) = "\\text{" ++ scrub name ++ "}"
+texify (Vec2 x y) = "\\begin{bmatrix}" ++ (intercalate "\\\\ " $ map texify [x,y]) ++ "\\end{bmatrix}"
+texify (Vec3 x y z) = "\\begin{bmatrix}" ++ (intercalate "\\\\ " $ map texify [x,y,z]) ++ "\\end{bmatrix}"
+texify (App _ "mul" xs) = intercalate "" $ map texify xs
+texify (App _ "add" xs) = intercalate "+" $ map texify xs
+-- texify (App type' name args) = "f_\\text{" ++ name ++ "}" ++ pleft ++ (intercalate ", " $ map texify args) ++ pright
+texify (App type' (name:_) args) = "\\ " ++ [name] ++ pleft ++ (intercalate ", " $ map texify args) ++ pright
+

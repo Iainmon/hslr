@@ -67,19 +67,29 @@ vec2 fluidWarpSlope(in vec2 p) {
     return v;
 }
 
+// vec2 fluidWarp(in vec2 st) {
+//     vec2 p = st;
+//     //float t = 0.5 * sin(u_time) + 0.5;
+//     int iterations = 100;
+//     for(int i = 0; i < iterations; i ++ ) {
+//         p += fluidWarpSlope(p);
+//     }
+//     return p;
+// }
+
 vec2 fluidWarp(in vec2 st) {
     vec2 p = st;
     //float t = 0.5 * sin(u_time) + 0.5;
-    int iterations = 100;
+    int iterations = 10;
     
     for(int i = 0; i < iterations; i ++ ) {
-        p += fluidWarpSlope(p);
+        p += fluidWarpSlope(p) * 10.0;
     }
     
     return p;
 }
 
-#define NUM_OCTAVES 6
+#define NUM_OCTAVES 9
 
 float fbm(in vec2 _st) {
     float v = 0.0;
@@ -100,4 +110,14 @@ float tmap(float scale) {
 }
 float slowTime(float speed) {
     return u_time * (1. / speed);
+}
+
+float prime_smoothstep(float edge0, float edge1, float x) {
+    float t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return 6. * (-(t * t) + t);
+}
+
+float normed_prime_smoothstep(float edge0, float edge1, float x) {
+    float t = clamp((x - edge0) / (edge1 - edge0) + .5, 0.0, 1.0);
+    return 4. * (-(t * t) + t);
 }

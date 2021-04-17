@@ -27,7 +27,7 @@ add key hashmap = M.insert key (incVal key hashmap) hashmap
 
 countSubTrees :: SyntaxTree -> M.Map SyntaxTree Int -> M.Map SyntaxTree Int
 countSubTrees (Imparitive _ ast) hashmap = countSubTrees ast hashmap
-countSubTrees (Node type' (Call name args)) hashmap = foldl' (\hm -> \arg -> countSubTrees arg hm) start args where start = flip add hashmap (Node type' (Call name args))
+countSubTrees (App type' name args) hashmap = foldl' (\hm -> \arg -> countSubTrees arg hm) start args where start = flip add hashmap (Node type' (Call name args))
 countSubTrees ast hashmap                           = if not $ M.member ast hashmap then M.insert ast 1 hashmap else hashmap
 
 countSubTrees' ast = countSubTrees ast (M.empty :: M.Map SyntaxTree Int)
@@ -50,8 +50,8 @@ factor (Imparitive instructions ast) ((Node type' subtree),n) = Imparitive newIn
     where term = (Node type' subtree)
           newInstruction = Assignment type' ("_cache_" ++ hexShow n) term
           newInstructions = if not $ elem term instructions then (newInstruction : instructions) else instructions
-factor (Node type' (Id name)) _ = Node type' $ Id name
-factor (Node type' (Call name args)) (term,n) = if (Node type' (Call name args)) == term
+factor (Var type' name) _ = Node type' $ Id name
+factor (App type' name args) (term,n) = if (Node type' (Call name args)) == term
                                                 then Node type' $ Id $ cacheSymbol n
                                                 else Node type' $ Call name $ fmap f args where f = (flip factor (term,n))
 factor x _ = x

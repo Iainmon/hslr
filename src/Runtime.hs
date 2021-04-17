@@ -35,6 +35,12 @@ normalize (Node type' x) = makeFunctionApplication "normalize" type' Float $ Nod
 smoothstep :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
 smoothstep (Node Float a) (Node Float b) (Node Float x) = Node Float $ Call "smoothstep" [(Node Float a), (Node Float b), (Node Float x)]
 
+smoothstep' :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
+smoothstep' (Node Float a) (Node Float b) (Node Float x) = Node Float $ Call "prime_smoothstep" [(Node Float a), (Node Float b), (Node Float x)]
+
+nsmoothstep' :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
+nsmoothstep' (Node Float a) (Node Float b) (Node Float x) = Node Float $ Call "normed_prime_smoothstep" [(Node Float a), (Node Float b), (Node Float x)]
+
 mix :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
 mix (Node type' a) (Node type'' b) (Node Float x) = Node (if type' == type'' then type' else Void) $ Call "mix" [(Node type' a), (Node type'' b), (Node Float x)]
 
