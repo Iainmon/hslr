@@ -88,3 +88,9 @@ main = do
 --     when (Prelude.length newContents > 0) $
 --         writeFile "out.frag" newContents
 m = main
+runProg :: SyntaxTree -> IO ()
+runProg program = do
+    let newContents = generateProgram $ flattenAssociativeOperations $ optimize program
+    let shaderFile = "out.frag"
+    save newContents shaderFile
+    run $ Params { width = 600, height = 600, fileName = shaderFile}

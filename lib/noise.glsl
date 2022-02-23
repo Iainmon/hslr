@@ -89,7 +89,7 @@ vec2 fluidWarp(in vec2 st) {
     return p;
 }
 
-#define NUM_OCTAVES 9
+#define NUM_OCTAVES 12
 
 float fbm(in vec2 _st) {
     float v = 0.0;

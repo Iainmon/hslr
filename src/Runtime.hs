@@ -51,9 +51,18 @@ perlin :: Function
 perlin (Node Vector2 x) = Node Float $ Call "perlin" [Node Vector2 x]
 perlin x = makeUndefinedError "perlin" x
 
+noise :: Function
+noise (Node Vector2 x) = Node Float $ Call "noise" [Node Vector2 x]
+noise x = makeUndefinedError "noise" x
+
+fbm :: Function
+fbm (Node Vector2 x) = Node Float $ Call "fbm" [Node Vector2 x]
+fbm x = makeUndefinedError "fbm" x
+
+
 pow :: SyntaxTree -> SyntaxTree -> SyntaxTree
 pow (Node Float x) (Node Float y) = Node Float $ Call "pow" [(Node Float x), (Node Float y)]
-pow x y = makeUndefinedError "perlin" x
+pow x y = makeUndefinedError "pow" x
 
 clamp :: SyntaxTree -> SyntaxTree -> SyntaxTree -> SyntaxTree
 clamp (Node Float a) (Node Float b) (Node Float x) = Node Float $ Call "clamp" [(Node Float a), (Node Float b), (Node Float x)]
@@ -101,3 +110,6 @@ x = Accessor "x" Float
 y = Accessor "y" Float
 xy = Accessor "xy" Vector2
 yx = Accessor "yx" Vector2
+
+
+
